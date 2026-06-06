@@ -1,211 +1,374 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { DashboardHeader } from '@/components/layout/dashboard-header';
-import { StatsCard } from '@/components/dashboard/stats-card';
-import { OrderList } from '@/components/dashboard/order-card';
-import { TableStats } from '@/components/dashboard/table-grid';
-import { api } from '@/lib/api/mock-data';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  DollarSign, 
-  Receipt, 
-  CreditCard, 
-  Clock,
-  CheckCircle2,
-  Printer
-} from 'lucide-react';
-import type { Order } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { OrderList } from "@/components/dashboard/order-card";
+import { api } from "@/lib/api/mock-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { Order, OrderStatus, PaymentMethod } from "@/lib/types";
+import PrintInvoice from "@/components/dashboard/billing-modal";
+import { useReactToPrint } from "react-to-print";
+
+const statusOptions: { value: OrderStatus | "all"; label: string }[] = [
+  { value: "all", label: "All statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "preparing", label: "Preparing" },
+  { value: "ready", label: "Ready" },
+  { value: "served", label: "Served" },
+];
+
+const paymentOptions: { value: PaymentMethod; label: string }[] = [
+  { value: "cash", label: "Cash" },
+  { value: "card", label: "Card" },
+  { value: "mobile", label: "Mobile" },
+  { value: "split", label: "Split" },
+];
+
+const statusLabel: Record<OrderStatus, { label: string; tone: string }> = {
+  pending: {
+    label: "Pending",
+    tone: "bg-warning/20 text-warning border-warning/30",
+  },
+  preparing: {
+    label: "Preparing",
+    tone: "bg-info/20 text-info border-info/30",
+  },
+  ready: {
+    label: "Ready",
+    tone: "bg-success/20 text-success border-success/30",
+  },
+  served: {
+    label: "Served",
+    tone: "bg-primary/20 text-primary border-primary/30",
+  },
+  completed: {
+    label: "Completed",
+    tone: "bg-muted text-muted-foreground border-muted",
+  },
+  cancelled: {
+    label: "Cancelled",
+    tone: "bg-destructive/20 text-destructive border-destructive/30",
+  },
+};
 
 export default function CashierDashboard() {
-  const { data: orders } = useQuery({
-    queryKey: ['active-orders'],
+  const { data: orders = [] } = useQuery({
+    queryKey: ["active-orders"],
     queryFn: api.getActiveOrders,
   });
 
-  const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: api.getDashboardStats,
-  });
-
-  const { data: tables } = useQuery({
-    queryKey: ['tables'],
+  const { data: tables = [] } = useQuery({
+    queryKey: ["tables"],
     queryFn: api.getTables,
   });
 
-  // Orders ready for checkout (served status)
-  const checkoutReady = orders?.filter(o => o.status === 'served') || [];
-  
-  // Today's completed orders (mock - in real app would filter by date)
-  const todayRevenue = stats?.totalRevenue || 0;
-  const todayOrders = stats?.totalOrders || 0;
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+  const [paidOrders, setPaidOrders] = useState<Record<string, boolean>>({});
+  const printRef = useRef<HTMLDivElement>(null);
 
-  const handleCheckout = (order: Order) => {
-    console.log('[v0] Processing checkout for order:', order.id);
+  useEffect(() => {
+    if (!selectedOrder && orders.length > 0) {
+      setSelectedOrder(orders[0]);
+    }
+  }, [orders, selectedOrder]);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesSearch =
+        searchTerm.trim().length === 0 ||
+        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.table.number.toString().includes(searchTerm) ||
+        order.waiter.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || order.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, searchTerm, statusFilter]);
+
+  const invoiceOrder = selectedOrder && {
+    ...selectedOrder,
+    paymentStatus: paidOrders[selectedOrder.id]
+      ? "paid"
+      : selectedOrder.paymentStatus,
+    paymentMethod,
   };
 
+  const handleMarkPaid = () => {
+    if (!selectedOrder) return;
+    setPaidOrders((prev) => ({ ...prev, [selectedOrder.id]: true }));
+  };
+
+  const handlePrintInvoice = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Invoice-${invoiceOrder?.id || "order"}`,
+  });
+
+  const checkoutReady = orders.filter((order) => order.status === "served");
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:bg-white mb-12">
       <DashboardHeader
-        title="Checkout"
-        description="Process payments and manage bills"
-      >
-        <Button variant="outline" className="touch-target">
-          <Printer className="size-4 mr-2" />
-          Print Report
-        </Button>
-      </DashboardHeader>
+        title="Cashier Checkout"
+        description="A simplified checkout workspace with quick invoice generation and payment handling."
+      />
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <StatsCard
-          title="Today&apos;s Revenue"
-          value={`$${todayRevenue.toLocaleString()}`}
-          icon={<DollarSign className="size-4" />}
-        />
-        <StatsCard
-          title="Orders Processed"
-          value={todayOrders}
-          icon={<Receipt className="size-4" />}
-        />
-        <StatsCard
-          title="Ready for Checkout"
-          value={checkoutReady.length}
-          icon={<CreditCard className="size-4" />}
-        />
-        <StatsCard
-          title="Avg. Transaction"
-          value={`$${stats?.averageOrderValue.toFixed(2) || '0.00'}`}
-          icon={<Clock className="size-4" />}
-        />
-      </div>
-
-      {/* Table Status */}
-      {tables && <TableStats tables={tables} />}
-
-      {/* Checkout Ready Orders */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Ready for Checkout</CardTitle>
-            <CardDescription>Tables waiting to pay</CardDescription>
+            <CardTitle>Total active orders</CardTitle>
           </CardHeader>
           <CardContent>
-            {checkoutReady.length === 0 ? (
+            <p className="text-3xl font-bold text-foreground">
+              {orders.length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Ready for checkout</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">
+              {checkoutReady.length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Pending payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">
+              {orders.filter((order) => order.paymentStatus !== "paid").length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Tables in house</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">
+              {tables.length}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+        <div className="space-y-4">
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Filter checkout orders</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Search orders
+                </label>
+                <Input
+                  placeholder="Search by order, table, or waiter"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  className="my-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Order status
+                </label>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) =>
+                    setStatusFilter(value as OrderStatus | "all")
+                  }
+                >
+                  <SelectTrigger className="w-full my-2">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <OrderList
+            orders={filteredOrders}
+            title="Orders"
+            emptyMessage="No orders available"
+            onOrderClick={(order) => setSelectedOrder(order)}
+          />
+        </div>
+
+        <Card className="bg-card border-border print:hidden">
+          <CardHeader>
+            <CardTitle>Invoice generator</CardTitle>
+            <CardDescription>
+              Select a checkout order and print the bill.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!invoiceOrder ? (
               <p className="text-center text-muted-foreground py-8">
-                No tables ready for checkout
+                Select an order to build the invoice.
               </p>
             ) : (
               <div className="space-y-4">
-                {checkoutReady.map((order) => (
-                  <div 
-                    key={order.id}
-                    className="rounded-lg border border-primary/30 bg-primary/5 p-4"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-12 items-center justify-center rounded-lg bg-primary/20 text-lg font-bold text-primary">
-                          {order.table.number}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{order.orderNumber}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {order.items.length} items - {order.waiter.name}
-                          </p>
-                        </div>
+                <div className="rounded-lg border border-border bg-background p-4">
+                  <div className="grid gap-3">
+                    <div className="flex justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Order</p>
+                        <p className="font-semibold text-foreground">
+                          {invoiceOrder.orderNumber}
+                        </p>
                       </div>
-                      <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
-                        Ready to Pay
-                      </Badge>
-                    </div>
-                    
-                    <Separator className="my-3" />
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Subtotal</span>
-                        <span>${order.subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Tax</span>
-                        <span>${order.tax.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-lg font-bold text-foreground">
-                        <span>Total</span>
-                        <span>${order.total.toFixed(2)}</span>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Table</p>
+                        <p className="font-semibold text-foreground">
+                          {invoiceOrder.table.number}
+                        </p>
                       </div>
                     </div>
-                    
-                    <div className="mt-4 flex gap-2">
-                      <Button 
-                        className="flex-1 touch-target"
-                        onClick={() => handleCheckout(order)}
-                      >
-                        <CreditCard className="size-4 mr-2" />
-                        Process Payment
-                      </Button>
-                      <Button variant="outline" className="touch-target">
-                        <Printer className="size-4" />
-                      </Button>
+                    <div className="flex justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Server</p>
+                        <p className="font-semibold text-foreground">
+                          {invoiceOrder.waiter.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={statusLabel[invoiceOrder.status].tone}
+                        >
+                          {statusLabel[invoiceOrder.status].label}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Payment option
+                    </label>
+                    <Select
+                      value={paymentMethod}
+                      onValueChange={(value) =>
+                        setPaymentMethod(value as PaymentMethod)
+                      }
+                    >
+                      <SelectTrigger className="w-full my-2">
+                        <SelectValue placeholder="Choose payment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border bg-background p-4">
+                  <div className="space-y-3">
+                    {invoiceOrder.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-4 text-sm"
+                      >
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {item.menuItem.name}
+                          </p>
+                          <p className="text-muted-foreground">
+                            x{item.quantity}
+                          </p>
+                        </div>
+                        <p className="text-foreground">
+                          Rs.{(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>Rs.{invoiceOrder.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tax</span>
+                      <span>Rs.{invoiceOrder.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-base font-semibold text-foreground">
+                      <span>Total</span>
+                      <span>Rs.{invoiceOrder.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button className="flex-1 cursor-pointer" onClick={handleMarkPaid}>
+                    Mark as Paid
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 hover:text-white cursor-pointer"
+                    onClick={handlePrintInvoice}
+                  >
+                    Print Invoice
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-
-        {/* Recent Transactions */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">Recent Transactions</CardTitle>
-            <CardDescription>Today&apos;s completed payments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {/* Mock recent transactions */}
-              {[
-                { id: '1', table: 6, amount: 87.50, time: '2 min ago', method: 'Card' },
-                { id: '2', table: 1, amount: 45.00, time: '15 min ago', method: 'Cash' },
-                { id: '3', table: 5, amount: 156.75, time: '32 min ago', method: 'Card' },
-                { id: '4', table: 8, amount: 92.30, time: '45 min ago', method: 'Card' },
-              ].map((tx) => (
-                <div 
-                  key={tx.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-success/20">
-                      <CheckCircle2 className="size-5 text-success" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Table {tx.table}</p>
-                      <p className="text-xs text-muted-foreground">{tx.time}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">${tx.amount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{tx.method}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Active Orders (not yet ready for checkout) */}
-      {orders && (
-        <OrderList
-          orders={orders.filter(o => o.status !== 'served')}
-          title="Active Orders"
-          emptyMessage="No active orders"
-        />
-      )}
+      <Card className="bg-card border-border print:hidden">
+        <CardHeader>
+          <CardTitle>Order preview for print</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            This page includes a built-in invoice view when you press Print.
+          </p>
+        </CardContent>
+      </Card>
+
+      <div ref={printRef}>
+        <PrintInvoice order={invoiceOrder} />
+      </div>
     </div>
   );
 }

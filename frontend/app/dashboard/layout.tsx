@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/context/auth-context';
 import { QueryProvider } from '@/providers/query-provider';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { Topbar } from '@/components/layout/topbar';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -35,13 +36,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      {user.role === 'admin' && (<AppSidebar />)}
       <SidebarInset>
         <Topbar />
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {children}
         </main>
       </SidebarInset>
+      {user.role !== 'admin' && <BottomNavbar />}
     </SidebarProvider>
   );
 }

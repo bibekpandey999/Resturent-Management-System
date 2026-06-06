@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Bell, LogOut, Search } from 'lucide-react';
-import { useAuth } from '@/context/auth-context';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Bell, LogOut, Search, UtensilsCrossed } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { SidebarHeader, SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,21 +13,57 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { UserRole } from "@/lib/types";
 
 interface TopbarProps {
   title?: string;
 }
 
+function getRoleDisplayName(role: UserRole): string {
+  const names: Record<UserRole, string> = {
+    admin: "Administrator",
+    waiter: "Server",
+    kitchen: "Kitchen Staff",
+    cashier: "Cashier",
+  };
+  return names[role];
+}
+
 export function Topbar({ title }: TopbarProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  if (!user) return null;
+
+  const roleDisplay = getRoleDisplayName(user.role);
+  const isAdmin = roleDisplay.includes("Administrator");
 
   return (
     <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex w-full items-center gap-2 px-4">
-        <SidebarTrigger className="-ml-1 touch-target" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
+        {isAdmin ? (
+          <div>
+            <SidebarTrigger className="-ml-1 touch-target" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </div>
+        ) : (
+          <SidebarHeader className="">
+            <div className="flex items-center gap-2 px-2 py-3">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-primary">
+                <UtensilsCrossed className="size-5 text-primary-foreground" />
+              </div>
+              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                <span className="text-sm font-semibold text-sidebar-foreground">
+                  DineFlow
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {roleDisplay}
+                </span>
+              </div>
+            </div>
+          </SidebarHeader>
+        )}
 
         {title && (
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
@@ -49,7 +85,11 @@ export function Topbar({ title }: TopbarProps) {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative touch-target">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative touch-target"
+              >
                 <Bell className="size-5" />
                 <Badge
                   variant="destructive"
@@ -98,12 +138,17 @@ export function Topbar({ title }: TopbarProps) {
           </DropdownMenu>
 
           <div className="md:flex items-center px-2">
-            <a href="/login" className="text-sm font-medium text-foreground">
-              <LogOut className="size-5 text-yellow-500" /></a>
+            <button onClick ={logout} className="text-sm font-medium text-foreground">
+              <LogOut className="size-5 text-yellow-500" />
+            </button>
           </div>
 
           {/* Mobile search button */}
-          <Button variant="ghost" size="icon" className="md:hidden touch-target">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden touch-target"
+          >
             <Search className="size-5" />
             <span className="sr-only">Search</span>
           </Button>
