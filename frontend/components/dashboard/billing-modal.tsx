@@ -2,9 +2,6 @@
 
 export default function PrintInvoice({ order }: any) {
 
-console.log("Now:", new Date());
-console.log("Order:", new Date(order.createdAt));
-
   if (!order) return null;
 
   const paymentLabel =
@@ -23,14 +20,10 @@ console.log("Order:", new Date(order.createdAt));
       <div className="w-[80mm] bg-white text-black px-3 py-2 text-xs font-sans m-[10px] border border-dashed border-gray-600 rounded">
         {/* Header */}
         <div className="text-center border-b border-gray-200 pb-2">
-            <div className="flex items-center justify-between text-[10px]">
-                <span>
-                    Estd: 2068/2/21
-                </span>
-                <span>
-                    PAN: 123S34Ft-V21
-                </span>
-            </div>
+          <div className="flex items-center justify-between text-[10px]">
+            <span>Estd: 2068/2/21</span>
+            <span>PAN: 123S34Ft-V21</span>
+          </div>
           <h1 className="text-xl font-bold tracking-wider">DINEFLOW</h1>
           <p className="text-[10px] text-gray-600">
             Restaurant Management System
@@ -44,19 +37,15 @@ console.log("Order:", new Date(order.createdAt));
             <span>{order.orderNumber}</span>
           </div>
 
-<div className="flex justify-between">
-  <span>Order</span>
-  <span>
-    {new Date(order.createdAt).toLocaleTimeString()}
-  </span>
-</div>
+          <div className="flex justify-between">
+            <span>Order</span>
+            <span>{new Date(order.createdAt).toLocaleTimeString()}</span>
+          </div>
 
-<div className="flex justify-between">
-  <span>Checkout</span>
-  <span>
-    {new Date().toLocaleTimeString()}
-  </span>
-</div>
+          <div className="flex justify-between">
+            <span>Checkout</span>
+            <span>{new Date().toLocaleTimeString()}</span>
+          </div>
         </div>
 
         {/* Order Info */}
@@ -78,9 +67,7 @@ console.log("Order:", new Date(order.createdAt));
 
           <div className="flex justify-between">
             <span>Status</span>
-            <span className="capitalize">
-              {order.paymentStatus}
-            </span>
+            <span className="capitalize">{order.paymentStatus}</span>
           </div>
         </div>
 
@@ -94,17 +81,10 @@ console.log("Order:", new Date(order.createdAt));
           </div>
 
           {order.items?.map((item: any) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-12 py-1"
-            >
-              <span className="col-span-5 truncate">
-                {item.menuItem?.name}
-              </span>
+            <div key={item.id} className="grid grid-cols-12 py-1">
+              <span className="col-span-5 truncate">{item.menuItem?.name}</span>
 
-              <span className="col-span-2 text-center">
-                {item.quantity}
-              </span>
+              <span className="col-span-2 text-center">{item.quantity}</span>
 
               <span className="col-span-2 text-right">
                 {item.price.toFixed(2)}
@@ -137,13 +117,9 @@ console.log("Order:", new Date(order.createdAt));
 
         {/* Footer */}
         <div className="text-center mt-4 space-y-1">
-          <p className="font-semibold">
-            Thank You For Visiting!
-          </p>
+          <p className="font-semibold">Thank You For Visiting!</p>
 
-          <p className="text-[10px] text-gray-600">
-            Please Visit Again
-          </p>
+          <p className="text-[10px] text-gray-600">Please Visit Again</p>
 
           <div className="border-t border-gray-200 mt-2 pt-2 text-[9px]">
             Powered by DineFlow
