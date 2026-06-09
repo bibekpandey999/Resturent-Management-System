@@ -49,10 +49,6 @@ export default function AdminDashboard() {
           <Download className="size-4 mr-2" />
           Export
         </Button>
-        <Button className="touch-target">
-          <Plus className="size-4 mr-2" />
-          New Order
-        </Button>
       </DashboardHeader>
 
       {/* Stats Grid */}

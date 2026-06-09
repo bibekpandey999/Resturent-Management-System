@@ -1,19 +1,77 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DashboardHeader } from '@/components/layout/dashboard-header';
-import { api } from '@/lib/api/mock-data';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
-import type { MenuItem, Table } from '@/lib/types';
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { api } from "@/lib/api/mock-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
+import type { MenuCategory, MenuItem } from "@/lib/types";
+
+export const mockCategories: MenuCategory[] = [
+  {
+    id: "cat-1",
+    name: "Appetizers",
+    description: "Start your meal right",
+    sortOrder: 1,
+    isActive: true,
+    itemCount: 5,
+  },
+  {
+    id: "cat-2",
+    name: "Main Course",
+    description: "Signature dishes",
+    sortOrder: 2,
+    isActive: true,
+    itemCount: 8,
+  },
+  {
+    id: "cat-3",
+    name: "Pasta",
+    description: "Fresh homemade pasta",
+    sortOrder: 3,
+    isActive: true,
+    itemCount: 6,
+  },
+  {
+    id: "cat-4",
+    name: "Desserts",
+    description: "Sweet endings",
+    sortOrder: 4,
+    isActive: true,
+    itemCount: 4,
+  },
+  {
+    id: "cat-5",
+    name: "Beverages",
+    description: "Drinks and cocktails",
+    sortOrder: 5,
+    isActive: true,
+    itemCount: 10,
+  },
+  {
+    id: "cat-6",
+    name: "Salads",
+    description: "Fresh and healthy",
+    sortOrder: 6,
+    isActive: true,
+    itemCount: 4,
+  },
+];
 
 export default function WaiterMenuPage() {
   const router = useRouter();
@@ -21,33 +79,59 @@ export default function WaiterMenuPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const tableId = searchParams.get('tableId');
+  const tableId = searchParams.get("tableId");
 
   const { data: tables } = useQuery({
-    queryKey: ['tables'],
+    queryKey: ["tables"],
     queryFn: api.getTables,
   });
 
   const { data: menuItems } = useQuery({
-    queryKey: ['menu-items'],
+    queryKey: ["menu-items"],
     queryFn: api.getMenuItems,
   });
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const selectedTable = useMemo(
     () => tables?.find((table) => table.id === tableId),
     [tables, tableId],
   );
 
+  const enrichedMenuItems = useMemo(() => {
+    return (menuItems ?? []).map((item) => ({
+      ...item,
+      category: mockCategories.find((c) => c.id === item.categoryId),
+    }));
+  }, [menuItems]);
+
   const availableMenuItems = useMemo(
-    () => menuItems?.filter((item) => item.isAvailable) ?? [],
-    [menuItems],
+    () => enrichedMenuItems.filter((item) => item.isAvailable),
+    [enrichedMenuItems],
   );
 
+  const filteredAvailableMenuItems = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return availableMenuItems.filter((item) => {
+      const matchesSearch =
+        term === "" ||
+        item.name.toLowerCase().includes(term) ||
+        item.description.toLowerCase().includes(term) ||
+        (item.category?.name ?? "").toLowerCase().includes(term);
+      const matchesCategory =
+        categoryFilter === "all" || item.category?.id === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [availableMenuItems, search, categoryFilter]);
+
   const selectedItems = useMemo(
-    () => availableMenuItems.filter((menuItem) => (quantities[menuItem.id] ?? 0) > 0),
+    () =>
+      availableMenuItems.filter(
+        (menuItem) => (quantities[menuItem.id] ?? 0) > 0,
+      ),
     [availableMenuItems, quantities],
   );
 
@@ -62,18 +146,18 @@ export default function WaiterMenuPage() {
   const createOrderMutation = useMutation({
     mutationFn: api.createOrder,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ["active-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast({
-        title: 'Order created',
+        title: "Order created",
         description: `Order has been sent to kitchen for Table ${selectedTable?.number}.`,
       });
-      router.push('/dashboard/waiter/orders');
+      router.push("/dashboard/waiter/orders");
     },
     onError: () => {
       toast({
-        title: 'Unable to create order',
-        description: 'Please try again or select a different table.',
+        title: "Unable to create order",
+        description: "Please try again or select a different table.",
       });
     },
   });
@@ -97,18 +181,19 @@ export default function WaiterMenuPage() {
   };
 
   const handleCreateOrder = () => {
-    if (!selectedTable || selectedTable.status !== 'available') {
+    if (!selectedTable || selectedTable.status !== "available") {
       toast({
-        title: 'Select a table',
-        description: 'Please open the waiter dashboard and choose an available table first.',
+        title: "Select a table",
+        description:
+          "Please open the waiter dashboard and choose an available table first.",
       });
       return;
     }
 
     if (selectedItems.length === 0) {
       toast({
-        title: 'No items selected',
-        description: 'Choose at least one menu item before creating the order.',
+        title: "No items selected",
+        description: "Choose at least one menu item before creating the order.",
       });
       return;
     }
@@ -119,48 +204,27 @@ export default function WaiterMenuPage() {
       menuItem,
       quantity: quantities[menuItem.id] ?? 1,
       price: menuItem.price,
-      status: 'pending' as const,
+      status: "pending" as const,
     }));
 
     createOrderMutation.mutate({
       tableId: selectedTable.id,
       items: orderItems,
-      status: 'pending',
-      paymentStatus: 'pending',
+      status: "pending",
+      paymentStatus: "pending",
       subtotal,
       tax,
       total,
       notes,
-      waiterId: '2',
+      waiterId: "2",
     });
   };
-
-  if (!selectedTable) {
-    return (
-      <div className="space-y-6">
-        <DashboardHeader
-          title="Menu"
-          description="Choose a table from the waiter dashboard before creating an order."
-        />
-        <Card className="border-border">
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              No table selected. To start a new waiter order, select an available table on the tables dashboard.
-            </p>
-            <Button onClick={() => router.push('/dashboard/waiter')}>
-              Back to Tables
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       <DashboardHeader
         title="Menu"
-        description={`Creating order for Table ${selectedTable.number} (${selectedTable.section})`}
+        description={`Creating order for Table ${selectedTable?.number || ""} ${selectedTable?.section || ""}`}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
@@ -170,34 +234,93 @@ export default function WaiterMenuPage() {
               <CardTitle className="text-foreground">Menu items</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
-              {availableMenuItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No menu items available right now.</p>
+              <div className="flex gap-2 items-center">
+                <Input
+                  className="flex-1"
+                  placeholder="Search menu items..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(v) => setCategoryFilter(v)}
+                >
+                  <SelectTrigger className="w-44">
+                    <SelectValue>
+                      {categoryFilter === "all"
+                        ? "All categories"
+                        : mockCategories.find((c) => c.id === categoryFilter)
+                            ?.name}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {mockCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {filteredAvailableMenuItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No menu items match your search.
+                </p>
               ) : (
-                availableMenuItems.map((menuItem) => (
-                  <div key={menuItem.id} className="rounded-3xl border border-border p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{menuItem.name}</p>
-                        <p className="text-sm text-muted-foreground">{menuItem.description}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                          <Badge variant="outline">${menuItem.price.toFixed(2)}</Badge>
-                          <Badge variant="outline">{menuItem.category?.name}</Badge>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredAvailableMenuItems.map((menuItem) => (
+                    <div
+                      key={menuItem.id}
+                      className="rounded-3xl border border-border p-4 flex flex-col"
+                    >
+                      <div className="mb-3 overflow-hidden rounded-md">
+                        <img
+                          src={menuItem.image ?? "/placeholder.jpg"}
+                          alt={menuItem.name}
+                          className="w-full h-40 object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {menuItem.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {menuItem.description}
+                          </p>
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline">
+                              Rs {menuItem.price.toFixed(2)}
+                            </Badge>
+                            <Badge variant="outline">
+                              {menuItem.category?.name}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-end gap-2 rounded-full border border-border bg-muted/20 px-3 py-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => decreaseQuantity(menuItem)}
+                          >
+                            -
+                          </Button>
+                          <span className="min-w-6 text-center text-sm font-semibold">
+                            {quantities[menuItem.id] ?? 0}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => increaseQuantity(menuItem)}
+                          >
+                            +
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 rounded-full border border-border bg-muted/20 px-3 py-2">
-                        <Button size="sm" variant="outline" onClick={() => decreaseQuantity(menuItem)}>
-                          -
-                        </Button>
-                        <span className="min-w-6 text-center text-sm font-semibold">
-                          {quantities[menuItem.id] ?? 0}
-                        </span>
-                        <Button size="sm" variant="outline" onClick={() => increaseQuantity(menuItem)}>
-                          +
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -212,28 +335,36 @@ export default function WaiterMenuPage() {
               <div className="space-y-2 rounded-3xl border border-border bg-muted/50 p-4">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Table</span>
-                  <span>{selectedTable.number}</span>
+                  <span>{selectedTable?.number}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Section</span>
-                  <span>{selectedTable.section}</span>
+                  <span>{selectedTable?.section}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Status</span>
-                  <span className="capitalize">{selectedTable.status}</span>
+                  <span className="capitalize">{selectedTable?.status}</span>
                 </div>
               </div>
 
               <div className="space-y-3">
                 {selectedItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No items selected yet.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No items selected yet.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {selectedItems.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">{item.name} x {quantities[item.id]}</span>
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm text-muted-foreground">
+                          {item.name} x {quantities[item.id]}
+                        </span>
                         <span className="text-sm font-semibold text-foreground">
-                          ${(item.price * (quantities[item.id] ?? 0)).toFixed(2)}
+                          Rs{" "}
+                          {(item.price * (quantities[item.id] ?? 0)).toFixed(2)}
                         </span>
                       </div>
                     ))}
@@ -246,21 +377,22 @@ export default function WaiterMenuPage() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>Rs {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>Rs {tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-foreground">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>Rs {total.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="order-notes">Order notes</Label>
                 <Textarea
+                  className="resize-none"
                   id="order-notes"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
@@ -269,14 +401,20 @@ export default function WaiterMenuPage() {
                 />
               </div>
 
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={handleCreateOrder}
-                disabled={createOrderMutation.isPending || selectedItems.length === 0}
-              >
-                {createOrderMutation.isPending ? 'Sending to Kitchen...' : 'Create Order'}
-              </Button>
+              {selectedItems && selectedTable && (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={handleCreateOrder}
+                  disabled={
+                    createOrderMutation.isPending || selectedItems.length === 0
+                  }
+                >
+                  {createOrderMutation.isPending
+                    ? "Sending to Kitchen..."
+                    : "Create Order"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>

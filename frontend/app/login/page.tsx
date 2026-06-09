@@ -157,7 +157,7 @@ function LoginForm() {
                 <Button
                   key={account.email}
                   variant="outline"
-                  className="flex flex-col h-auto py-3 touch-target"
+                  className="flex flex-col h-auto py-3 text-white hover:text-none touch-target"
                   onClick={() => handleDemoLogin(account)}
                   disabled={isLoading}
                 >

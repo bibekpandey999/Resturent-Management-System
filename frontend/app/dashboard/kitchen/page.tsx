@@ -54,7 +54,7 @@ export default function KitchenDashboard() {
       </DashboardHeader>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 grid-cols-2">
         <StatsCard
           title="Pending Orders"
           value={pendingCount}
