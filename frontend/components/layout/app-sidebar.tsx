@@ -94,7 +94,7 @@ const adminNavGroups: NavGroup[] = [
       },
       {
         title: "Roles & Permissions",
-        href: "/dashboard/admin/roles",
+        href: "/dashboard/admin/roles-and-permission",
         icon: Shield,
         roles: ["admin"],
       },
@@ -146,12 +146,12 @@ const adminNavGroups: NavGroup[] = [
         icon: Pizza,
         roles: ["admin"],
       },
-      {
-        title: "Modifiers",
-        href: "/dashboard/admin/menu/modifiers",
-        icon: Sliders,
-        roles: ["admin"],
-      },
+      // {
+      //   title: "Modifiers",
+      //   href: "/dashboard/admin/menu/modifiers",
+      //   icon: Sliders,
+      //   roles: ["admin"],
+      // },
     ],
   },
   {
