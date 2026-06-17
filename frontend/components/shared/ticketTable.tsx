@@ -12,6 +12,7 @@ import { Eye, Printer } from "lucide-react";
 
 import { formatDate, statusStyle } from "@/components/dashboard/admin/shared";
 import { useUpdateTicketStatus } from "@/hooks/waiter/updateTicketStatus";
+import { useAuth } from "@/context/auth-context";
 
 interface Props {
   tickets: any[];
@@ -37,7 +38,7 @@ export function formatTimeAgo(date: string | Date) {
 }
 
 export function TicketTable({ tickets, onView, onPrint }: Props) {
-  const role = "Waiter";
+    const { user } = useAuth();
 
   const { mutate: markServed, isPending } = useUpdateTicketStatus();
 
@@ -100,7 +101,7 @@ export function TicketTable({ tickets, onView, onPrint }: Props) {
               </TableCell>
 
               <TableCell>
-                {role === "Waiter" ? (
+                {user?.role === "waiter" ? (
                   <div className="flex gap-2">
                     <Button
                       variant="secondary"
