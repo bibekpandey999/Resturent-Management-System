@@ -161,6 +161,90 @@ const createOrder: AppRouteMutationImplementation<
   }
 };
 
+export const updatePaymentStatus: AppRouteMutationImplementation<
+  typeof orderContract.updatePaymentStatus
+> = async ({ req }) => {
+  try {
+    const { orderID } = req.params;
+    const { status, paymentStatus } = req.body;
+
+    const Payment = await orderRepository.getByID(orderID);
+
+    if (!Payment) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          error: "Payment not found",
+        },
+      };
+    }
+
+    const updated = await orderRepository.updateStatus(
+      orderID,
+      status,
+      paymentStatus,
+    );
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: "Payment updated",
+        data: updated,
+      },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        success: false,
+        error: (error as Error).message,
+      },
+    };
+  }
+};
+
+export const removeOrder: AppRouteMutationImplementation<
+  typeof orderContract.removeOrder
+> = async ({ req }) => {
+  try {
+    const { orderID } = req.params;
+
+    const order = await orderRepository.getByID(orderID);
+
+    if (!order) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          error: "Order not found",
+        },
+      };
+    }
+
+    await orderRepository.delete(orderID);
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: "Order cancelled",
+      },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        success: false,
+        error: "Failed to delete order",
+      },
+    };
+  }
+};
+
 export const orderMutationHandler = {
   createOrder,
+  updatePaymentStatus,
+  removeOrder,
 };

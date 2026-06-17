@@ -120,6 +120,27 @@ class OrderRepository {
     }
   }
 
+  async updateStatus(
+    ticketId: string,
+    status: "active" | "completed" | "cancelled" | undefined,
+    paymentStatus: "pending" | "paid" | "partial" | undefined,
+  ) {
+    try {
+      return await this.model.findByIdAndUpdate(
+        ticketId,
+        {
+          status,
+          paymentStatus,
+        },
+        {
+          new: true,
+        },
+      );
+    } catch (error) {
+      throw new Error(`Error updating ticket status: ${error}`);
+    }
+  }
+
   async delete(id: string) {
     try {
       return await this.model.findByIdAndDelete(id);

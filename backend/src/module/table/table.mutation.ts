@@ -100,6 +100,49 @@ export const updateTable: AppRouteMutationImplementation<
   }
 };
 
+export const updateTicketStatus: AppRouteMutationImplementation<
+  typeof tableContract.updateTableStatus
+> = async ({ req }) => {
+  try {
+    const { tableID } = req.params;
+    const { status } = req.body;
+
+    const table = await tableRepository.getByID(tableID);
+
+    if (!table) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          error: "Table not found",
+        },
+      };
+    }
+
+    const updated = await tableRepository.updateStatus(
+      tableID,
+      status,
+    );
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: "Table updated",
+        data: updated,
+      },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        success: false,
+        error: (error as Error).message,
+      },
+    };
+  }
+};
+
 export const removeTable: AppRouteMutationImplementation<
   typeof tableContract.removeTable
 > = async ({ req }) => {
@@ -131,5 +174,6 @@ export const removeTable: AppRouteMutationImplementation<
 export const tableMutationHandler = {
   createTable,
   updateTable,
+  updateTicketStatus,
   removeTable,
 };

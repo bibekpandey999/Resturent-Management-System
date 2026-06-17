@@ -24,6 +24,14 @@ const updateTableApi = async (TableId: string, formData: FormData) => {
   return response.data;
 };
 
+const updateTableStatusApi = async (tableId: string, status: string) => {
+  const response = await apiClient.put(`/table/status/${tableId}`, {
+    status,
+  });
+
+  return response.data;
+};
+
 const deleteTableApi = async (TableId: TDeleteTableSchema["_id"]) => {
   const response = await apiClient.delete(`/table/${TableId}`);
   return response.data;
@@ -34,5 +42,6 @@ export const tableApi = {
   getAllTableApi,
   getTableByIdApi,
   updateTableApi,
+  updateTableStatusApi,
   deleteTableApi,
 };

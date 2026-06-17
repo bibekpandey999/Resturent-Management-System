@@ -3,33 +3,42 @@ import kitchenTicketRepository from "../../repository/ticket.repository";
 import { ticketContract } from "../../contract/ticket/ticket.contract";
 
 const mapTicket = (ticket: any) => {
+  const order = ticket.orderId;
+  const table = ticket.tableId;
+
   return {
-    _id: ticket._id.toString(),
-
-    orderId:
-      ticket.orderId?._id?.toString?.() ||
-      ticket.orderId?.toString?.(),
-
-    tableId:
-      ticket.tableId?._id?.toString?.() ||
-      ticket.tableId?.toString?.(),
-
+    // Ticket
+    _id: ticket._id?.toString?.(),
     ticketNumber: ticket.ticketNumber,
+    status: ticket.status,
+    printed: ticket.printed,
+    createdAt: ticket.createdAt,
 
+    // Order (populated)
+    orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
+    orderNumber: order?.orderNumber || null,
+    customerName: order?.customerName || "Guest",
+
+    waiter: {
+      waiterId:
+        order?.waiterId?._id?.toString?.() || order?.waiterId?.toString?.(),
+      name: order?.waiterId?.name || null,
+    },
+
+    // Table (populated)
+    table: {
+      tableId: table?._id?.toString?.() || ticket.tableId?.toString?.(),
+      tableName: table?.name || null,
+      capacity: table?.capacity || null,
+      status: table?.status || null,
+    },
+
+    // Items (kitchen view + finance usable)
     items: (ticket.items ?? []).map((i: any) => ({
-      menuItemId:
-        i.menuItemId?._id?.toString?.() ||
-        i.menuItemId,
-
+      menuItemId: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
       name: i.name,
       quantity: i.quantity,
     })),
-
-    printed: ticket.printed,
-
-    status: ticket.status,
-
-    createdAt: ticket.createdAt,
   };
 };
 
@@ -39,8 +48,7 @@ export const getTicketById: AppRouteQueryImplementation<
   try {
     const { ticketID } = req.params;
 
-    const ticket =
-      await kitchenTicketRepository.getByID(ticketID);
+    const ticket = await kitchenTicketRepository.getByID(ticketID);
 
     if (!ticket) {
       return {
@@ -69,14 +77,15 @@ export const getTicketById: AppRouteQueryImplementation<
 
 export const getLiveTickets: AppRouteQueryImplementation<
   typeof ticketContract.getLiveTickets
-> = async () => {
+> = async (req) => {
   try {
-    const tickets =
-      await kitchenTicketRepository.getAll({
-        skip: 0,
-        limit: 100,
-        status: "pending",
-      });
+    const search = req.query.search as string | undefined;
+    const tickets = await kitchenTicketRepository.getAll({
+      skip: 0,
+      limit: 100,
+      status: "pending",
+      search,
+    });
 
     return {
       status: 200,
@@ -89,8 +98,7 @@ export const getLiveTickets: AppRouteQueryImplementation<
       status: 500,
       body: {
         success: false,
-        error:
-          "Failed to fetch tickets",
+        error: "Failed to fetch tickets",
       },
     };
   }
@@ -102,8 +110,7 @@ export const getTicketsByOrder: AppRouteQueryImplementation<
   try {
     const { orderID } = req.params;
 
-    const tickets =
-      await kitchenTicketRepository.getByOrderID(orderID);
+    const tickets = await kitchenTicketRepository.getByOrderID(orderID);
 
     if (!tickets || tickets.length === 0) {
       return {
@@ -133,7 +140,7 @@ export const getTicketsByOrder: AppRouteQueryImplementation<
 };
 
 export const ticketQueryHandler = {
-    getTicketById,
-    getLiveTickets,
-    getTicketsByOrder,
+  getTicketById,
+  getLiveTickets,
+  getTicketsByOrder,
 };

@@ -44,8 +44,6 @@ export default function UsersPage() {
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
 
-  console.log(editId);
-
   const { data: userData } = useAllUsers({ role: selectedRole });
   const users = userData?.data ?? [];
 
@@ -241,7 +239,7 @@ export default function UsersPage() {
             id="user-search"
             value={filter}
             onChange={setFilter}
-              className="w-full sm:w-auto flex-1"
+            className="w-full sm:w-auto flex-1"
             placeholder="Search by name, email, role or status"
           />
           <div className="flex items-center gap-3">
@@ -257,7 +255,11 @@ export default function UsersPage() {
               <option value="kitchen">Kitchen Staff</option>
               <option value="cashier">Cashier</option>
             </select>
-            <Button variant="default" className="bg-green-600 text-white hover:bg-green-700" onClick={() => setFilter("")}>
+            <Button
+              variant="default"
+              className="bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setFilter("")}
+            >
               Export
               <Download className="h-4 w-4" />
             </Button>

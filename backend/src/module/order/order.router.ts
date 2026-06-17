@@ -9,11 +9,13 @@ const s = initServer();
 
 export const orderRouter = s.router(orderContract, {
   createOrder: orderMutationHandler.createOrder,
-  updateOrder: orderMutationHandler.updateOrder,
+  // updateOrder: orderMutationHandler.updateOrder,
+  updatePaymentStatus: orderMutationHandler.updatePaymentStatus,
   removeOrder: orderMutationHandler.removeOrder,
 
   getAllOrders: orderQueryHandler.getAllOrders,
   getOrderByID: orderQueryHandler.getOrderByID,
+  getActiveOrderByTable: orderQueryHandler.getActiveOrderByTable,
 });
 
 export default orderRouter;

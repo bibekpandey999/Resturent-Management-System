@@ -6,6 +6,7 @@ import {
   getAllOrdersSchema,
   getOrderByIdSchema,
   updateOrderSchema,
+  updatePaymentSchema,
 } from "./order.schema";
 
 import { errorSchema, successSchema } from "../commonSchema";
@@ -70,17 +71,30 @@ export const orderContract = c.router({
     },
   },
 
-  updateOrder: {
+  // updateOrder: {
+  //   method: "PUT",
+  //   path: "/order/:orderID",
+  //   summary: "Update order",
+  //   pathParams: z.object({
+  //     orderID: z.string(),
+  //   }),
+  //   body: updateOrderSchema,
+  //   responses: {
+  //     200: successSchema,
+  //     400: errorSchema,
+  //     404: errorSchema,
+  //   },
+  // },
+
+  updatePaymentStatus: {
     method: "PUT",
-    path: "/order/:orderID",
-    summary: "Update order",
+    path: "/order/payment/:orderID",
     pathParams: z.object({
       orderID: z.string(),
     }),
-    body: updateOrderSchema,
+    body: updatePaymentSchema,
     responses: {
       200: successSchema,
-      400: errorSchema,
       404: errorSchema,
     },
   },

@@ -22,6 +22,7 @@ export function statusStyle(status: string) {
     case "confirmed":
       return "bg-emerald-100 text-emerald-700";
     case "pending":
+      return "bg-yellow-100 text-yellow-700";
     case "out-of-stock":
     case "draft":
       return "bg-amber-100 text-amber-700";

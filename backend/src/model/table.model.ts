@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface ITable extends Document {
   name: string;
   capacity: number;
-  status: "available" | "occupied" | "reserved" | "cleaning" | "out-of-service";
+  status: "available" | "occupied" | "reserved";
 
   sectionId?: mongoose.Types.ObjectId;
   createdAt: Date;

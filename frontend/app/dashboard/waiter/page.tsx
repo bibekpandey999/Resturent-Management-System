@@ -153,16 +153,6 @@ export default function WaiterDashboard() {
           title="Floor Plan"
         />
       )}
-
-      {/* Orders Ready */}
-      {readyOrders.length > 0 && (
-        <OrderList orders={readyOrders} title="Orders Ready for Pickup" />
-      )}
-
-      {/* My Active Orders */}
-      {myOrders.length > 0 && (
-        <OrderList orders={myOrders} title="My Active Orders" />
-      )}
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { apiClient } from "@/utils/apiClient";
 import { UsePaginationParams } from "../types/usePagination";
-import { TCreateOrderSchema, TDeleteOrderSchema, TGetOrderByIdSchema } from "../validations/order.validation";
+import {
+  TCreateOrderSchema,
+  TDeleteOrderSchema,
+  TGetOrderByIdSchema,
+} from "../validations/order.validation";
 
 export const createOrder = async (data: TCreateOrderSchema) => {
   const res = await apiClient.post("/order", data);
@@ -29,6 +33,18 @@ const updateOrderApi = async (OrderId: string, formData: FormData) => {
   return response.data;
 };
 
+const updatePaymentStatusApi = async (
+  OrderId: string,
+  status: string,
+  paymentStatus: string,
+) => {
+  const response = await apiClient.put(`/order/payment/${OrderId}`, {
+    status,
+    paymentStatus,
+  });
+  return response.data;
+};
+
 const deleteOrderApi = async (OrderId: TDeleteOrderSchema["_id"]) => {
   const response = await apiClient.delete(`/order/${OrderId}`);
   return response.data;
@@ -39,6 +55,7 @@ export const orderApi = {
   getAllOrderApi,
   getOrderByIdApi,
   updateOrderApi,
+  updatePaymentStatusApi,
   deleteOrderApi,
   getActiveOrderByTableApi,
 };

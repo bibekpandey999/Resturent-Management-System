@@ -3,9 +3,7 @@ import { z } from "zod";
 export const tableStatusEnum = z.enum([
   "available",
   "occupied",
-  "reserved",
-  "cleaning",
-  "out-of-service",
+  "reserved"
 ]);
 
 export const createTableSchema = z.object({
@@ -33,4 +31,8 @@ export const updateTableSchema = z.object({
   capacity: z.number().min(1).optional(),
   status: tableStatusEnum.optional(),
   sectionId: z.string().optional(),
+});
+
+export const updateTableStatusSchema = z.object({
+  status: tableStatusEnum.optional(),
 });

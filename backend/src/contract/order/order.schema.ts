@@ -48,6 +48,12 @@ export const updateOrderSchema = z.object({
   paymentStatus: paymentStatusEnum.optional(),
 });
 
+export const updatePaymentSchema = z.object({
+  printed: z.boolean().optional(),
+  status: orderStatusEnum.optional(),
+  paymentStatus: paymentStatusEnum.optional(),
+});
+
 export const deleteOrderSchema = z.object({
   _id: z.string(),
 });

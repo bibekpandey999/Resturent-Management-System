@@ -13,7 +13,10 @@ const c = initContract();
 export const ticketContract = c.router({
   getLiveTickets: {
     method: "GET",
-    path: "/kitchen-ticket",
+    path: "/ticket",
+    query: z.object({
+      search: z.string().optional(),
+    }),
     responses: {
       200: z.object({
         data: z.array(kitchenTicketSchema),
@@ -23,7 +26,7 @@ export const ticketContract = c.router({
   },
   getTicketByID: {
     method: "GET",
-    path: "/kitchen-ticket/:ticketID",
+    path: "/ticket/:ticketID",
     pathParams: z.object({
       ticketID: z.string(),
     }),
@@ -35,7 +38,7 @@ export const ticketContract = c.router({
 
   getTicketsByOrder: {
     method: "GET",
-    path: "/kitchen-ticket/order/:orderID",
+    path: "/ticket/order/:orderID",
     pathParams: z.object({
       orderID: z.string(),
     }),
@@ -49,7 +52,7 @@ export const ticketContract = c.router({
 
   updateTicketStatus: {
     method: "PUT",
-    path: "/kitchen-ticket/:ticketID",
+    path: "/ticket/:ticketID",
     pathParams: z.object({
       ticketID: z.string(),
     }),
@@ -62,7 +65,7 @@ export const ticketContract = c.router({
 
   removeTicket: {
     method: "DELETE",
-    path: "/kitchen-ticket/:ticketID",
+    path: "/ticket/:ticketID",
     pathParams: z.object({
       ticketID: z.string(),
     }),

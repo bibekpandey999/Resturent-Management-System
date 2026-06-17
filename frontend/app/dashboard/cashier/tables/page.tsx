@@ -18,12 +18,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAllTables } from "@/hooks/admin/table/getAllTables";
 import { TableStatus, TTable } from "@/lib/types/table.types";
+import { useUpdateTableStatus } from "@/hooks/cahsier/updateTableStatus";
 
 const tableStatusOptions: { value: TableStatus | "all"; label: string }[] = [
   { value: "all", label: "All tables" },
   { value: "available", label: "Available" },
   { value: "occupied", label: "Occupied" },
-  { value: "reserved", label: "Reserved" }
+  { value: "reserved", label: "Reserved" },
 ];
 
 export default function CashierTablesPage() {
@@ -36,9 +37,10 @@ export default function CashierTablesPage() {
   const [selectedTable, setSelectedTable] = useState<TTable | null>(null);
 
   const filteredTables = tables?.filter(
-    (table: TTable) =>
-      statusFilter === "all" || table.status === statusFilter,
+    (table: TTable) => statusFilter === "all" || table.status === statusFilter,
   );
+
+  const { mutate: markServed, isPending } = useUpdateTableStatus();
 
   return (
     <div className="space-y-6 mb-12">
@@ -139,9 +141,9 @@ export default function CashierTablesPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className={`grid gap-6 ${selectedTable ? "xl:grid-cols-[1.2fr_0.8fr]" : "grid-cols-1"}`}>
         <div className="space-y-4">
-          <TableStats tables={filteredTables} />
+          <TableStats tables={tables} />
           <TableGrid
             tables={filteredTables}
             onTableClick={setSelectedTable}
@@ -149,70 +151,80 @@ export default function CashierTablesPage() {
           />
         </div>
 
-        <div className="space-y-4">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Selected table</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedTable ? (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-border bg-background p-4">
-                    <p className="text-sm text-muted-foreground">
-                      Table number
-                    </p>
-                    <p className="text-3xl font-semibold text-foreground">
-                      {selectedTable.name}
-                    </p>
-                  </div>
+        {selectedTable && (
+          <div className="space-y-4">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle>Selected table</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedTable ? (
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-border bg-background p-4">
+                      <p className="text-sm text-muted-foreground">
+                        Table number
+                      </p>
+                      <p className="text-3xl font-semibold text-foreground">
+                        {selectedTable.name}
+                      </p>
+                    </div>
 
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex justify-between">
-                      <span>Section</span>
-                      <span>{selectedTable.section}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Capacity</span>
-                      <span>{selectedTable.capacity}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Status</span>
-                      <Badge
-                        className={
-                          selectedTable.status === "available"
-                            ? "bg-success/20 text-success"
-                            : selectedTable.status === "occupied"
-                              ? "bg-primary/20 text-primary"
-                              : selectedTable.status === "reserved"
-                                ? "bg-warning/20 text-warning"
-                                : "bg-muted text-muted-foreground"
-                        }
-                      >
-                        {selectedTable.status.replace(/-/g, " ")}
-                      </Badge>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <div className="flex justify-between">
+                        <span>Section</span>
+                        <span>{selectedTable.section}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Capacity</span>
+                        <span>{selectedTable.capacity}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Status</span>
+                        <Badge
+                          className={
+                            selectedTable.status === "available"
+                              ? "bg-success/20 text-success"
+                              : selectedTable.status === "occupied"
+                                ? "bg-primary/20 text-primary"
+                                : selectedTable.status === "reserved"
+                                  ? "bg-warning/20 text-warning"
+                                  : "bg-muted text-muted-foreground"
+                          }
+                        >
+                          {selectedTable.status.replace(/-/g, " ")}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">
-                  Tap any table card to view its details.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Tap any table card to view its details.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Quick actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full">Refresh table list</Button>
-              <Button variant="outline" className="w-full">
-                Reset filters
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle>Quick actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  onClick={() =>
+                    markServed({
+                      tableId: selectedTable?._id || "",
+                      status: "available",
+                    })
+                  }
+                  variant="secondary"
+                  className="w-full cursor-pointer"
+                >
+                  Reset Table
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

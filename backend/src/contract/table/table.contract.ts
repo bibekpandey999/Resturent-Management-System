@@ -6,6 +6,7 @@ import {
   updateTableSchema,
   getTableByIdSchema,
   getAllTablesSchema,
+  updateTableStatusSchema,
 } from "./table.schema";
 
 import { successSchema, errorSchema } from "../commonSchema";
@@ -66,7 +67,7 @@ export const tableContract = c.router({
   updateTable: {
     method: "PUT",
     path: "/table/:tableID",
-  summary: "Update a table by its ID",
+    summary: "Update a table by its ID",
     pathParams: z.object({
       tableID: z.string(),
     }),
@@ -76,6 +77,19 @@ export const tableContract = c.router({
       400: errorSchema,
       404: errorSchema,
       500: errorSchema,
+    },
+  },
+
+  updateTableStatus: {
+    method: "PUT",
+    path: "/table/status/:tableID",
+    pathParams: z.object({
+      tableID: z.string(),
+    }),
+    body: updateTableStatusSchema,
+    responses: {
+      200: successSchema,
+      404: errorSchema,
     },
   },
 

@@ -31,6 +31,25 @@ class TableRepository {
     });
   }
 
+  async updateStatus(
+    tableID: string,
+    status: "available" | "occupied" | "reserved" | undefined,
+  ) {
+    try {
+      return await this.model.findByIdAndUpdate(
+        tableID,
+        {
+          status,
+        },
+        {
+          new: true,
+        },
+      );
+    } catch (error) {
+      throw new Error(`Error updating ticket status: ${error}`);
+    }
+  }
+
   async delete(tableID: string) {
     return Table.findByIdAndDelete(tableID);
   }
@@ -76,7 +95,7 @@ class TableRepository {
 
     return { data, total };
   }
-    async countByRoom(sectionId: string) {
+  async countByRoom(sectionId: string) {
     return this.model.countDocuments({ sectionId });
   }
 }

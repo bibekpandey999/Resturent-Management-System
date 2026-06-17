@@ -63,7 +63,6 @@ export const removeTicket: AppRouteMutationImplementation<
       };
     }
 
-    // SAFER OPTION: mark as cancelled
     await kitchenTicketRepository.updateStatus(ticketID, "cancelled");
 
     return {

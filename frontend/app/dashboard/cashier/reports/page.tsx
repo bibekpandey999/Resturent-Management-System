@@ -1,123 +1,252 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { DashboardHeader } from '@/components/layout/dashboard-header';
-import { api } from '@/lib/api/mock-data';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import type { Order, PaymentMethod, PaymentStatus } from '@/lib/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { useMemo, useRef, useState } from "react";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import type { Order, PaymentMethod, PaymentStatus } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { useAllOrders } from "@/hooks/admin/orders/getAllOrders";
+import { TOrder } from "@/lib/types/order.types";
+import OrderInvoicePrint from "@/components/dashboard/admin/order-invoice-print";
+import { useReactToPrint } from "react-to-print";
+import { CheckSquare, CreditCard, Download, Eye } from "lucide-react";
+import { formatDate } from "@/components/dashboard/admin/shared";
+import { useUpdatePaymentStatus } from "@/hooks/cahsier/updatePaymentStatus";
+import TablePagination from "@/components/shared/pagination";
 
-const paymentStatusOptions: { value: PaymentStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All payments' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'pending', label: 'Pending' },
-];
+const paymentStatusOptions: { value: PaymentStatus | "all"; label: string }[] =
+  [
+    { value: "all", label: "All payments" },
+    { value: "paid", label: "Paid" },
+    { value: "pending", label: "Pending" },
+  ];
 
-const paymentMethodOptions: { value: PaymentMethod | 'all'; label: string }[] = [
-  { value: 'all', label: 'All methods' },
-  { value: 'cash', label: 'Cash' },
-  { value: 'card', label: 'Card' },
-  { value: 'mobile', label: 'Mobile' },
-  { value: 'split', label: 'Split' },
-];
-
-const formatDate = (date: Date | undefined) => date ? new Date(date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '-';
+const paymentMethodOptions: { value: PaymentMethod | "all"; label: string }[] =
+  [
+    { value: "all", label: "All methods" },
+    { value: "cash", label: "Cash" },
+    { value: "card", label: "Card" },
+    { value: "mobile", label: "Mobile" },
+    { value: "split", label: "Split" },
+  ];
 
 function createCsvData(orders: Order[]) {
-  const headers = ['Order #', 'Table', 'Server', 'Total', 'Payment status', 'Payment method', 'Completed at'];
+  const headers = [
+    "Order #",
+    "Table",
+    "Server",
+    "Total",
+    "Payment status",
+    "Payment method",
+    "Completed at",
+  ];
   const rows = orders.map((order) => [
     order.orderNumber,
     order.table.number.toString(),
     order.waiter.name,
     order.total.toFixed(2),
     order.paymentStatus,
-    order.paymentMethod || 'N/A',
+    order.paymentMethod || "N/A",
     formatDate(order.completedAt || order.createdAt),
   ]);
 
   return [headers, ...rows]
-    .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-}
-
-function buildInvoiceText(order: Order) {
-  const lines = [
-    'DineFlow POS - Checkout Invoice',
-    '----------------------------------------',
-    `Order: ${order.orderNumber}`,
-    `Table: ${order.table.number}`,
-    `Server: ${order.waiter.name}`,
-    `Date: ${formatDate(order.completedAt || order.createdAt)}`,
-    '----------------------------------------',
-    'Items:',
-    ...order.items.map((item) => `  ${item.quantity} x ${item.menuItem.name} - $${(item.price * item.quantity).toFixed(2)}`),
-    '----------------------------------------',
-    `Subtotal: $${order.subtotal.toFixed(2)}`,
-    `Tax: $${order.tax.toFixed(2)}`,
-    `Total: $${order.total.toFixed(2)}`,
-    `Payment status: ${order.paymentStatus}`,
-    `Payment method: ${order.paymentMethod || 'N/A'}`,
-    '----------------------------------------',
-    'Thank you for dining with us!',
-  ];
-  return lines.join('\n');
+    .map((row) =>
+      row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","),
+    )
+    .join("\n");
 }
 
 export default function CashierReportsPage() {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const { data: completedOrders = [] } = useQuery({ queryKey: ['completed-orders'], queryFn: api.getCompletedOrders });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
-  const [methodFilter, setMethodFilter] = useState<PaymentMethod | 'all'>('all');
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null);
+  const [statusFilter, setStatusFilter] = useState<PaymentStatus | "all">(
+    "all",
+  );
+  const [methodFilter, setMethodFilter] = useState<PaymentMethod | "all">(
+    "all",
+  );
+  const [printOrder, setPrintOrder] = useState<TOrder | null>(null);
+
+  const { data: PrintOrder } = useAllOrders({});
+
+  const { data: orderData } = useAllOrders({
+    page: 1,
+    limit: 10,
+    search: searchTerm,
+    status: statusFilter,
+  });
+  const orders = orderData?.data || [];
+
+  const invoiceRef = useRef<HTMLDivElement>(null);
+
+  const handlePrintInvoice = useReactToPrint({
+    contentRef: invoiceRef,
+    documentTitle: printOrder?.orderNumber || "invoice",
+  });
 
   const filteredOrders = useMemo(() => {
-    return completedOrders.filter((order) => {
-      const matchesSearch = searchTerm.trim().length === 0 ||
+    return orders.filter((order: TOrder) => {
+      const matchesSearch =
+        searchTerm.trim().length === 0 ||
+        order.customerName?.toString().includes(searchTerm) ||
         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.table.number.toString().includes(searchTerm) ||
-        order.waiter.name.toLowerCase().includes(searchTerm.toLowerCase());
+        order.table?.name.toString().includes(searchTerm) ||
+        order.waiter?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || order.paymentStatus === statusFilter;
-      const matchesMethod = methodFilter === 'all' || order.paymentMethod === methodFilter;
-      return matchesSearch && matchesStatus && matchesMethod;
+      const matchesStatus =
+        statusFilter === "all" || order.paymentStatus === statusFilter;
+      return matchesSearch && matchesStatus;
     });
-  }, [completedOrders, searchTerm, statusFilter, methodFilter]);
+  }, [orders, searchTerm, statusFilter]);
 
-  const downloadReportCsv = () => {
-    const csv = createCsvData(filteredOrders);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+  const { mutate: updateOrderStatus, isPending } = useUpdatePaymentStatus();
+
+  const downloadRecords = () => {
+    if (!PrintOrder.data?.length) return;
+
+    const headers = [
+      "SN",
+
+      // Order Info
+      "Order Number",
+      "Order ID",
+      "Status",
+      "Payment Status",
+      "Customer Name",
+
+      // Table Info
+      "Table Name",
+      "Table Capacity",
+      "Table Status",
+
+      // Waiter Info
+      "Waiter ID",
+      "Waiter Name",
+      "Waiter Email",
+
+      // Items (flattened string)
+      "Items",
+
+      // Financials
+      "Subtotal (Rs)",
+      "Tax (Rs)",
+      "Discount (Rs)",
+      "Service Charge (Rs)",
+      "Total (Rs)",
+
+      // Meta
+      "Notes",
+      "Ticket Count",
+      "Created At",
+      "Updated At",
+    ];
+
+    const rows = PrintOrder.data?.map((o: TOrder, i: number) => {
+      const itemsText = o.items
+        .map(
+          (item) =>
+            `${item.menuItem} x${item.quantity} @${item.price} = ${item.total}`,
+        )
+        .join(" | ");
+
+      return [
+        i + 1,
+
+        // Order
+        o._id,
+        o.orderNumber,
+        o.status,
+        o.paymentStatus,
+        o.customerName,
+
+        // Table
+        o.table?.name,
+        o.table?.capacity,
+        o.table?.status,
+
+        // Waiter
+        o.waiter?._id,
+        o.waiter?.name,
+        o.waiter?.email,
+
+        // Items
+        itemsText,
+
+        // Financials
+        o.subtotal,
+        o.tax,
+        o.discount,
+        o.serviceCharge,
+        o.total,
+
+        // Meta
+        o.notes,
+        o.ticketCount,
+        formatDate(o.createdAt),
+        formatDate(o.updatedAt),
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: (string | number)[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'cashier-report.csv';
+    link.download = `local_vibes_orders-${new Date().toISOString().split("T")[0]}.csv`;
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
 
-  const downloadInvoice = (order: Order) => {
-    const text = buildInvoiceText(order);
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${order.orderNumber.replace('#', '')}-invoice.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6">
-      <DashboardHeader title="Cashier Reports" description="Browse completed checkout records, search by order, and export invoices or full reports." />
+      <DashboardHeader
+        title="Cashier Reports"
+        description="Browse completed checkout records, search by order, and export invoices or full reports."
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Card className="bg-card border-border">
@@ -126,7 +255,9 @@ export default function CashierReportsPage() {
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Search</label>
+              <label className="text-sm font-medium text-foreground">
+                Search
+              </label>
               <Input
                 placeholder="Order #, table, server"
                 value={searchTerm}
@@ -134,8 +265,15 @@ export default function CashierReportsPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Payment status</label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as PaymentStatus | 'all')}>
+              <label className="text-sm font-medium text-foreground">
+                Payment status
+              </label>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(value as PaymentStatus | "all")
+                }
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Any status" />
                 </SelectTrigger>
@@ -149,8 +287,15 @@ export default function CashierReportsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Payment method</label>
-              <Select value={methodFilter} onValueChange={(value) => setMethodFilter(value as PaymentMethod | 'all')}>
+              <label className="text-sm font-medium text-foreground">
+                Payment method
+              </label>
+              <Select
+                value={methodFilter}
+                onValueChange={(value) =>
+                  setMethodFilter(value as PaymentMethod | "all")
+                }
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Any method" />
                 </SelectTrigger>
@@ -164,7 +309,7 @@ export default function CashierReportsPage() {
               </Select>
             </div>
             <div className="flex items-end gap-2">
-              <Button className="w-full" onClick={downloadReportCsv}>
+              <Button className="w-full" onClick={downloadRecords}>
                 Export full report
               </Button>
             </div>
@@ -179,12 +324,15 @@ export default function CashierReportsPage() {
             <div className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
               <div>
                 <p className="text-sm text-muted-foreground">Total records</p>
-                <p className="font-semibold text-foreground">{filteredOrders.length}</p>
+                <p className="font-semibold text-foreground">
+                  {filteredOrders.length}
+                </p>
               </div>
               <Badge className="bg-primary/20 text-primary">Showing</Badge>
             </div>
             <div className="rounded-lg border border-border bg-background p-4 text-sm text-muted-foreground">
-              Refine the list by search, payment status, or method to locate invoices faster.
+              Refine the list by search, payment status, or method to locate
+              invoices faster.
             </div>
           </CardContent>
         </Card>
@@ -196,99 +344,185 @@ export default function CashierReportsPage() {
         </CardHeader>
         <CardContent>
           <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Table</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Server</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order</TableHead>
+                <TableHead>Table</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Server</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Payment</TableHead>
+                {/* <TableHead>Method</TableHead> */}
+                <TableHead>Date</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
+              {filteredOrders.map((order: TOrder) => (
+                <TableRow key={order._id}>
                   <TableCell>{order.orderNumber}</TableCell>
-                  <TableCell>{order.table.number}</TableCell>
-                  <TableCell>{/* @ts-ignore */}{(order as any).customerName || '-'}</TableCell>
-                  <TableCell>{order.waiter.name}</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
+                  <TableCell>{order.table?.name}</TableCell>
                   <TableCell>
-                    <Badge className={order.paymentStatus === 'paid' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'}>
+                    {/* @ts-ignore */}
+                    {(order as any).customerName || "-"}
+                  </TableCell>
+                  <TableCell>{order.waiter?.name}</TableCell>
+                  <TableCell>Rs {order.total.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        order.paymentStatus === "paid"
+                          ? "bg-success/20 text-success"
+                          : "bg-warning/20 text-warning"
+                      }
+                    >
                       {order.paymentStatus}
                     </Badge>
                   </TableCell>
-                  <TableCell>{order.paymentMethod || 'N/A'}</TableCell>
-                  <TableCell>{formatDate(order.completedAt || order.createdAt)}</TableCell>
+                  {/* <TableCell>{order.paymentMethod || "N/A"}</TableCell> */}
+                  <TableCell>{formatDate(order.createdAt)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => downloadInvoice(order)}>
-                        Invoice
+                      <Button
+                        variant="secondary"
+                        className="text-gray-300 cursor-pointer hover:bg-primary/90 hover:text-white"
+                        size="icon"
+                        onClick={() =>
+                          setSelectedOrder(
+                            orders.find((o: TOrder) => o._id === order._id),
+                          )
+                        }
+                      >
+                        <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setSelectedOrder(order)}>
-                        View
-                      </Button>
+                      {order.paymentStatus === "paid" ? (
+                        <Button
+                          variant="secondary"
+                          className="text-gray-300 cursor-pointer hover:text-white"
+                          size="icon"
+                          onClick={() => {
+                            setPrintOrder(order);
+                            setTimeout(() => {
+                              handlePrintInvoice();
+                            }, 100);
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          className="text-gray-300 cursor-pointer hover:bg-green-700 hover:text-white"
+                          size="icon"
+                          onClick={() => updateOrderStatus(order._id)}
+                        >
+                          <CreditCard className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
               {filteredOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="p-6 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={8}
+                    className="p-6 text-center text-muted-foreground"
+                  >
                     No records found.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          {orderData?.pagination?.totalPages > 1 && (
+            <div className="mt-4">
+              <TablePagination
+                page={page}
+                totalPages={orderData?.pagination?.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
       {selectedOrder && (
-        <Dialog open={!!selectedOrder} onOpenChange={(open) => { if (!open) setSelectedOrder(null); }}>
+        <Dialog
+          open={!!selectedOrder}
+          onOpenChange={(open) => {
+            if (!open) setSelectedOrder(null);
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Order {selectedOrder.orderNumber}</DialogTitle>
               <DialogDescription>Complete checkout details</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 mt-2">
-              <div>Customer: {/* @ts-ignore */}{(selectedOrder as any).customerName || '-'}</div>
-              <div>Table: {selectedOrder.table.number}</div>
-              <div>Server: {selectedOrder.waiter.name}</div>
+              <div>
+                Customer: {/* @ts-ignore */}
+                {(selectedOrder as any).customerName || "-"}
+              </div>
+              <div>Table: {selectedOrder.table?.name}</div>
+              <div>Server: {selectedOrder.waiter?.name}</div>
               <div>Status: {selectedOrder.paymentStatus}</div>
 
               <div>
                 <h4 className="font-semibold">Items</h4>
                 <div className="space-y-2 mt-2">
-                  {selectedOrder.items.map(it => (
-                    <div key={it.id} className="flex items-center justify-between">
+                  {selectedOrder.items?.map((it) => (
+                    <div
+                      key={it.menuItem}
+                      className="flex items-center justify-between"
+                    >
                       <div>
-                        <div className="font-medium">{it.menuItem.name} x{it.quantity}</div>
+                        <div className="font-medium">
+                          {it.menuItem} x{it.quantity}
+                        </div>
                       </div>
-                      <div className="text-foreground">${(it.price * it.quantity).toFixed(2)}</div>
+                      <div className="text-foreground">
+                        Rs {(it.price * it.quantity).toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="border-t pt-3">
-                <div className="flex justify-between"><span>Subtotal</span><span>${selectedOrder.subtotal.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span>Tax</span><span>${selectedOrder.tax.toFixed(2)}</span></div>
-                <div className="flex justify-between font-semibold text-foreground"><span>Total</span><span>${selectedOrder.total.toFixed(2)}</span></div>
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>Rs {selectedOrder.subtotal?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tax</span>
+                  <span>Rs {selectedOrder.tax?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-foreground">
+                  <span>Total</span>
+                  <span>Rs {selectedOrder.total?.toFixed(2)}</span>
+                </div>
               </div>
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Close</Button>
+                  <Button variant="secondary">Close</Button>
                 </DialogClose>
               </DialogFooter>
             </div>
           </DialogContent>
         </Dialog>
       )}
+      <div
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: 0,
+        }}
+      >
+        <div ref={invoiceRef}>
+          <OrderInvoicePrint order={printOrder} />
+        </div>
+      </div>
     </div>
   );
 }

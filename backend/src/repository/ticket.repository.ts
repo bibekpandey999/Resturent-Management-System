@@ -1,3 +1,4 @@
+import MenuItem from "../model/menu-item.model";
 import KitchenTicketModel, { IKitchenTicket } from "../model/ticket.model";
 
 class KitchenTicketRepository {
@@ -19,10 +20,12 @@ class KitchenTicketRepository {
     skip,
     limit,
     status,
+    search,
   }: {
     skip: number;
     limit: number;
     status?: string;
+    search?: string;
   }) {
     try {
       const query: any = {};
@@ -30,11 +33,38 @@ class KitchenTicketRepository {
       if (status && status !== "all") {
         query.status = status;
       }
-
+      if (search) {
+        query.$or = [
+          {
+            orderNumber: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            customerName: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            "items.name": {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
       const data = await this.model
         .find(query)
         .populate("orderId")
         .populate("tableId")
+        .populate({
+          path: "orderId",
+          populate: {
+            path: "waiterId",
+          },
+        })
         .sort({
           createdAt: -1,
         })
@@ -85,6 +115,8 @@ class KitchenTicketRepository {
         .findOne({
           orderId,
         })
+        .populate("orderId")
+        .populate("tableId")
         .sort({
           ticketNumber: -1,
         });
@@ -108,22 +140,6 @@ class KitchenTicketRepository {
       return await this.model.findByIdAndDelete(id);
     } catch (error) {
       throw new Error(`Error deleting ticket: ${error}`);
-    }
-  }
-
-  async markPrinted(ticketId: string) {
-    try {
-      return await this.model.findByIdAndUpdate(
-        ticketId,
-        {
-          printed: true,
-        },
-        {
-          new: true,
-        },
-      );
-    } catch (error) {
-      throw new Error(`Error updating ticket print status: ${error}`);
     }
   }
 
