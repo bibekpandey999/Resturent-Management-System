@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 # Environment variables
 .env*.local
 
 # Common ignores
 node_modules
+=======
+/node_modules
+.env
+>>>>>>> 5606ea72c00f9ee22040447f9c8bbe371944dc2a

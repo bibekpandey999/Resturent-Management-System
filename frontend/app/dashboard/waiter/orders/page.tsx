@@ -1,59 +1,60 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { DashboardHeader } from '@/components/layout/dashboard-header';
-import { Button } from '@/components/ui/button';
-import { OrderCard, OrderList } from '@/components/dashboard/order-card';
-import { api } from '@/lib/api/mock-data';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Order, OrderStatus } from '@/lib/types';
+import { useRef, useState } from "react";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PageSection } from "@/components/dashboard/admin/shared";
+import { TicketTable } from "@/components/shared/ticketTable";
+import { useLiveTickets } from "@/hooks/cahsier/getAllTicket";
+import { Status } from "@/lib/types/ticket.types";
+import { Button } from "@/components/ui/button";
 
-const orderStatusOptions: { value: OrderStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All statuses' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'preparing', label: 'Preparing' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'served', label: 'Served' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+const orderStatusOptions: { value: Status | "all"; label: string }[] = [
+  { value: "all", label: "All statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "served", label: "Served" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
 export default function WaiterOrdersPage() {
-  const { data: activeOrders, refetch: refetchActive } = useQuery({
-    queryKey: ['active-orders'],
-    queryFn: api.getActiveOrders,
-  });
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
 
-  const { data: completedOrders, refetch: refetchCompleted } = useQuery({
-    queryKey: ['completed-orders'],
-    queryFn: api.getCompletedOrders,
-  });
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [printedTicket, setPrintedTicket] = useState<any | null>(null);
 
-  const waiterIds = ['2', '5'];
-  const waiterOrders = activeOrders?.filter(
-    (order) => waiterIds.includes(order.waiterId) && order.status !== 'served',
-  ) ?? [];
+  const filterTicketsByDateRange = (tickets: any[]) => {
+    if (!fromDate && !toDate) return tickets;
 
-  const waiterServedOrders = activeOrders?.filter(
-    (order) => waiterIds.includes(order.waiterId) && order.status === 'served',
-  ) ?? [];
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
 
-  const waiterHistory = [
-    ...(completedOrders?.filter((order) => waiterIds.includes(order.waiterId)) ?? []),
-    ...waiterServedOrders,
-  ];
+    return tickets.filter((ticket) => {
+      const createdAt = new Date(ticket.createdAt);
 
-  const [orderStatusFilter, setOrderStatusFilter] = useState<OrderStatus | 'all'>('all');
-  const filteredWaiterOrders = waiterOrders.filter(
-    (order) => orderStatusFilter === 'all' || order.status === orderStatusFilter,
-  );
+      if (from && createdAt < from) return false;
 
-  const handleMarkServed = async (order: Order) => {
-    await api.updateOrderStatus(order.id, 'served');
-    refetchActive();
-    refetchCompleted();
+      if (to) {
+        const endOfTo = new Date(to);
+        endOfTo.setHours(23, 59, 59, 999);
+
+        if (createdAt > endOfTo) return false;
+      }
+
+      return true;
+    });
   };
+
+  const { data: ticketData } = useLiveTickets({});
+  const tickets = ticketData?.data ?? [];
+  const filteredTickets = filterTicketsByDateRange(tickets);
 
   return (
     <div className="space-y-6">
@@ -62,62 +63,63 @@ export default function WaiterOrdersPage() {
         description="View the waiter order queue and completed history."
       />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Active orders filter</h2>
-          <p className="text-sm text-muted-foreground">Filter waiter orders by status.</p>
+          <h2 className="text-sm font-medium text-foreground">
+            Active orders filter
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Filter waiter orders by status.
+          </p>
         </div>
-        <div className="w-full max-w-xs">
-          <Select value={orderStatusFilter} onValueChange={(value) => setOrderStatusFilter(value as OrderStatus | 'all')}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              {orderStatusOptions.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted-foreground">From</label>
+            <input
+              type="datetime-local"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted-foreground">To</label>
+            <input
+              type="datetime-local"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            />
+          </div>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setFromDate("");
+              setToDate("");
+            }}
+          >
+            Reset
+          </Button>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-card border-border rounded-xl">
-          <div className="border-b border-border px-4 py-4">
-            <h3 className="text-sm font-semibold text-foreground">Active Orders</h3>
-          </div>
-          <div className="p-4 space-y-3">
-            {filteredWaiterOrders.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No active waiter orders</p>
-            ) : (
-              <div className="space-y-3">
-                {filteredWaiterOrders.map((order) => (
-                  <div key={order.id} className="space-y-2">
-                    <OrderCard order={order} compact />
-                    {order.status === 'ready' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleMarkServed(order)}
-                      >
-                        Mark served
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        <PageSection title="Ticket Records">
+          <TicketTable
+            tickets={filteredTickets}
+            onView={setSelectedTicket}
+            onPrint={(ticket) => {
+              setPrintedTicket(ticket);
 
-      <OrderList
-        orders={waiterHistory}
-        title="Completed Orders"
-        emptyMessage="No completed orders yet"
-      />
+              setTimeout(() => {
+                document.getElementById("ticket-printer")?.click();
+              }, 100);
+            }}
+          />
+        </PageSection>
+      </div>
     </div>
   );
 }

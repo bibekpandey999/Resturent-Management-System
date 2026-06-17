@@ -130,7 +130,6 @@
   }
 }
 
-/* Custom scrollbar for dark theme */
 @layer base {
   ::-webkit-scrollbar {
     width: 8px;
@@ -148,10 +147,34 @@
   }
 }
 
-/* Touch-friendly targets */
 @layer utilities {
   .touch-target {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .receipt-print {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    border: none !important;
+  }
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }

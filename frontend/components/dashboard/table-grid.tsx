@@ -1,12 +1,11 @@
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { Table, TableStatus } from "@/lib/types";
-import { Button } from "../ui/button";
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { TableStatus, TTable } from '@/lib/types/table.types';
 
 interface TableGridProps {
-  tables: Table[];
-  onTableClick?: (table: Table) => void;
+  tables: TTable[];
+  onTableClick?: (table: TTable) => void;
   title?: string;
 }
 
@@ -29,25 +28,15 @@ const statusConfig: Record<
     className: "bg-warning/20 text-warning border-warning/30",
     cardClass: "border-warning/30 hover:border-warning/50",
   },
-  cleaning: {
-    label: "Cleaning",
-    className: "bg-muted text-muted-foreground border-muted",
-    cardClass: "border-muted hover:border-muted-foreground/30",
-  },
-  "out-of-service": {
-    label: "Out of service",
-    className: "bg-slate-500/20 text-slate-200 border-slate-500/30",
-    cardClass: "border-slate-500/30 hover:border-slate-500/50",
-  },
 };
 
 interface TableCardProps {
-  table: Table;
+  table: TTable;
   onClick?: () => void;
 }
 
 export function TableCard({ table, onClick }: TableCardProps) {
-  const status = statusConfig[table.status];
+  const status = statusConfig[table.status];  
 
   return (
     <Card
@@ -60,7 +49,7 @@ export function TableCard({ table, onClick }: TableCardProps) {
     >
       <CardContent className="flex flex-col items-center justify-center p-4 text-center">
         <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-secondary text-xl font-bold text-foreground">
-          {table.number}
+          {table.name}
         </div>
         <p className="text-xs text-muted-foreground mb-2">
           {table.capacity} seats
@@ -73,7 +62,7 @@ export function TableCard({ table, onClick }: TableCardProps) {
             <button className="border-none outline-none cursor-pointer rounded-md bg-yellow-800 px-2 py-1">
               Free Space
             </button>
-            <a href={`/dashboard/waiter/menu?tableId=${table.id}`} className="border-none outline-none cursor-pointer rounded-md bg-lime-800 px-2 py-1">
+            <a href={`/dashboard/waiter/menu?tableId=${table._id}`} className="border-none outline-none cursor-pointer rounded-md bg-lime-800 px-2 py-1">
               Re-Order
             </a>
           </div>
@@ -85,16 +74,13 @@ export function TableCard({ table, onClick }: TableCardProps) {
 
 export function TableGrid({ tables, onTableClick, title }: TableGridProps) {
   // Group tables by section
-  const sections = tables.reduce(
-    (acc, table) => {
-      if (!acc[table.section]) {
-        acc[table.section] = [];
-      }
-      acc[table.section].push(table);
-      return acc;
-    },
-    {} as Record<string, Table[]>,
-  );
+  const sections = tables.reduce((acc, table) => {
+    if (!acc[table.section]) {
+      acc[table.section] = [];
+    }
+    acc[table.section].push(table);
+    return acc;
+  }, {} as Record<string, TTable[]>);
 
   return (
     <Card className="bg-card border-border">
@@ -113,7 +99,7 @@ export function TableGrid({ tables, onTableClick, title }: TableGridProps) {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {sectionTables.map((table) => (
                   <TableCard
-                    key={table.id}
+                    key={table._id}
                     table={table}
                     onClick={
                       onTableClick ? () => onTableClick(table) : undefined
@@ -130,16 +116,16 @@ export function TableGrid({ tables, onTableClick, title }: TableGridProps) {
 }
 
 interface TableStatsProps {
-  tables: Table[];
+  tables: TTable[];
 }
 
 export function TableStats({ tables }: TableStatsProps) {
   const stats = {
     total: tables.length,
-    available: tables.filter((t) => t.status === "available").length,
-    occupied: tables.filter((t) => t.status === "occupied").length,
-    reserved: tables.filter((t) => t.status === "reserved").length,
-    cleaning: tables.filter((t) => t.status === "cleaning").length,
+    available: tables.filter(t => t.status === 'available').length,
+    occupied: tables.filter(t => t.status === 'occupied').length,
+    reserved: tables.filter(t => t.status === 'reserved').length,
+    // cleaning: tables.filter(t => t.status === 'cleaning').length,
   };
 
   return (
@@ -156,9 +142,9 @@ export function TableStats({ tables }: TableStatsProps) {
       <Badge variant="outline" className={statusConfig.reserved.className}>
         Reserved: {stats.reserved}
       </Badge>
-      <Badge variant="outline" className={statusConfig.cleaning.className}>
+      {/* <Badge variant="outline" className={statusConfig.cleaning.className}>
         Cleaning: {stats.cleaning}
-      </Badge>
+      </Badge> */}
     </div>
   );
 }

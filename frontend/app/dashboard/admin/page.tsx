@@ -1,3 +1,5 @@
+"use client";
+
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
@@ -45,10 +47,6 @@ export default function AdminDashboard() {
         title="Dashboard"
         description="Overview of your restaurant performance"
       >
-        <Button variant="outline" className="touch-target">
-          <Download className="size-4 mr-2" />
-          Export
-        </Button>
       </DashboardHeader>
 
       {/* Stats Grid */}
@@ -110,3 +108,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

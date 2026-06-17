@@ -17,7 +17,7 @@ export default function PrintInvoice({ order }: any) {
 
   return (
     <div className="hidden print:block">
-      <div className="w-[80mm] bg-white text-black px-3 py-2 text-xs font-sans m-[10px] border border-dashed border-gray-600 rounded">
+      <div className="receipt-print w-[80mm] bg-white text-black px-3 py-2 text-xs font-sans m-[10px] border border-dashed border-gray-600 rounded">
         {/* Header */}
         <div className="text-center border-b border-gray-200 pb-2">
           <div className="flex items-center justify-between text-[10px]">
