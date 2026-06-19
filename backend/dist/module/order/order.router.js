@@ -8,11 +8,9 @@ const order_query_1 = require("./order.query");
 const s = (0, express_1.initServer)();
 exports.orderRouter = s.router(order_contract_1.orderContract, {
     createOrder: order_mutation_1.orderMutationHandler.createOrder,
-    // updateOrder: orderMutationHandler.updateOrder,
     updatePaymentStatus: order_mutation_1.orderMutationHandler.updatePaymentStatus,
     removeOrder: order_mutation_1.orderMutationHandler.removeOrder,
     getAllOrders: order_query_1.orderQueryHandler.getAllOrders,
     getOrderByID: order_query_1.orderQueryHandler.getOrderByID,
     getActiveOrderByTable: order_query_1.orderQueryHandler.getActiveOrderByTable,
 });
-exports.default = exports.orderRouter;

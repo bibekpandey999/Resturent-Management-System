@@ -32,6 +32,8 @@ export const expenseContract = c.router({
       page: z.coerce.number().optional(),
       limit: z.coerce.number().optional(),
       search: z.string().optional(),
+      category: z.string().optional(),
+      supplier: z.string().optional(),
     }),
     responses: {
       200: z.object({

@@ -186,5 +186,146 @@ class OrderRepository {
             throw new Error(`Error fetching active orders: ${error}`);
         }
     }
+    async getDashboardStats() {
+        try {
+            const now = new Date();
+            const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+            const [currentMonthStats, previousMonthStats, activeOrders] = await Promise.all([
+                this.model.aggregate([
+                    {
+                        $match: {
+                            createdAt: {
+                                $gte: currentMonthStart,
+                            },
+                            status: {
+                                $ne: "cancelled",
+                            },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            totalRevenue: {
+                                $sum: "$totalAmount",
+                            },
+                            totalOrders: {
+                                $sum: 1,
+                            },
+                        },
+                    },
+                ]),
+                this.model.aggregate([
+                    {
+                        $match: {
+                            createdAt: {
+                                $gte: previousMonthStart,
+                                $lte: previousMonthEnd,
+                            },
+                            status: {
+                                $ne: "cancelled",
+                            },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            totalRevenue: {
+                                $sum: "$totalAmount",
+                            },
+                            totalOrders: {
+                                $sum: 1,
+                            },
+                        },
+                    },
+                ]),
+                this.model.countDocuments({
+                    status: "active",
+                }),
+            ]);
+            return {
+                currentMonth: currentMonthStats[0] || {
+                    totalRevenue: 0,
+                    totalOrders: 0,
+                },
+                previousMonth: previousMonthStats[0] || {
+                    totalRevenue: 0,
+                    totalOrders: 0,
+                },
+                activeOrders,
+            };
+        }
+        catch (error) {
+            throw new Error(`Error fetching dashboard stats: ${error}`);
+        }
+    }
+    async getRevenueChart(period) {
+        try {
+            const now = new Date();
+            let startDate = null;
+            switch (period) {
+                case "7d":
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - 7);
+                    break;
+                case "30d":
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - 30);
+                    break;
+                case "90d":
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - 90);
+                    break;
+                case "1y":
+                    startDate = new Date(now);
+                    startDate.setFullYear(now.getFullYear() - 1);
+                    break;
+                case "all":
+                    startDate = null;
+                    break;
+            }
+            const matchStage = {
+                status: {
+                    $ne: "cancelled",
+                },
+            };
+            if (startDate) {
+                matchStage.createdAt = {
+                    $gte: startDate,
+                };
+            }
+            const groupFormat = period === "1y" || period === "all" ? "%Y-%m" : "%Y-%m-%d";
+            return await this.model.aggregate([
+                {
+                    $match: matchStage,
+                },
+                {
+                    $group: {
+                        _id: {
+                            $dateToString: {
+                                format: groupFormat,
+                                date: "$createdAt",
+                            },
+                        },
+                        revenue: {
+                            $sum: "$subtotal",
+                        },
+                        orders: {
+                            $sum: 1,
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        _id: 1,
+                    },
+                },
+            ]);
+        }
+        catch (error) {
+            throw new Error(`Error fetching revenue chart: ${error}`);
+        }
+    }
 }
 exports.default = new OrderRepository();

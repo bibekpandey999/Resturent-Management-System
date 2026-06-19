@@ -1,0 +1,38 @@
+"use strict";
+// constants/ingredient-units.ts
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.INGREDIENT_UNITS = void 0;
+exports.INGREDIENT_UNITS = [
+    "g",
+    "kg",
+    "mg",
+    "ml",
+    "ltr",
+    "cup",
+    "tbsp",
+    "tsp",
+    "pcs",
+    "piece",
+    "dozen",
+    "packet",
+    "pack",
+    "box",
+    "bottle",
+    "can",
+    "jar",
+    "bag",
+    "bunch",
+    "slice",
+    "leaf",
+    "clove",
+    "tray",
+    "portion",
+    "serving",
+    "sack",
+    "carton",
+    "roll",
+    "whole",
+    "fillet",
+    "loaf",
+    "unit",
+];

@@ -10,6 +10,7 @@ exports.ticketContract = c.router({
     getLiveTickets: {
         method: "GET",
         path: "/ticket",
+        summary: "Get all live kitchen tickets",
         query: zod_1.z.object({
             search: zod_1.z.string().optional(),
         }),
@@ -23,6 +24,7 @@ exports.ticketContract = c.router({
     getTicketByID: {
         method: "GET",
         path: "/ticket/:ticketID",
+        summary: "Get kitchen ticket by ID",
         pathParams: zod_1.z.object({
             ticketID: zod_1.z.string(),
         }),
@@ -34,6 +36,7 @@ exports.ticketContract = c.router({
     getTicketsByOrder: {
         method: "GET",
         path: "/ticket/order/:orderID",
+        summary: "Get all kitchen tickets for a specific order",
         pathParams: zod_1.z.object({
             orderID: zod_1.z.string(),
         }),
@@ -47,6 +50,7 @@ exports.ticketContract = c.router({
     updateTicketStatus: {
         method: "PUT",
         path: "/ticket/:ticketID",
+        summary: "Update kitchen ticket status",
         pathParams: zod_1.z.object({
             ticketID: zod_1.z.string(),
         }),
@@ -59,6 +63,7 @@ exports.ticketContract = c.router({
     removeTicket: {
         method: "DELETE",
         path: "/ticket/:ticketID",
+        summary: "Delete a kitchen ticket",
         pathParams: zod_1.z.object({
             ticketID: zod_1.z.string(),
         }),

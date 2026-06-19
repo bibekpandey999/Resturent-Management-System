@@ -14,10 +14,11 @@ const express_2 = require("@ts-rest/express");
 const morgan_1 = __importDefault(require("morgan"));
 const swagger_config_1 = require("./config/swagger.config");
 const module_1 = require("./module");
+const env_1 = __importDefault(require("./config/env"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: [
-        "http://localhost:3000",
+        env_1.default.frontend_url || "https://thedineflow.vercel.app",
     ],
     credentials: true,
 }));

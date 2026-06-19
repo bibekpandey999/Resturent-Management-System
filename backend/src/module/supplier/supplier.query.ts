@@ -75,7 +75,7 @@ export const getSupplierByID: AppRouteQueryImplementation<
         contactPerson: supplier.contactPerson,
         phone: supplier.phone,
         email: supplier.email,
-        address: supplier.address,
+        address: supplier.address || "",
         isActive: supplier.isActive,
         createdAt: supplier.createdAt,
         updatedAt: supplier.updatedAt,

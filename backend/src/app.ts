@@ -16,7 +16,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      env.frontend_url || "http://localhost:4000",
+      env.frontend_url || "https://thedineflow.vercel.app",
     ],
     credentials: true,
   })
