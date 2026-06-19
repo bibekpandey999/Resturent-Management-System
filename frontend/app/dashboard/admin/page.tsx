@@ -1,44 +1,50 @@
 "use client";
 
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { DashboardHeader } from '@/components/layout/dashboard-header';
-import { StatsCard } from '@/components/dashboard/stats-card';
-import { RevenueChart } from '@/components/dashboard/revenue-chart';
-import { OrderList } from '@/components/dashboard/order-card';
-import { ActivityFeed } from '@/components/dashboard/activity-feed';
-import { TableStats } from '@/components/dashboard/table-grid';
-import { api } from '@/lib/api/mock-data';
-import { Button } from '@/components/ui/button';
-import { Plus, Download } from 'lucide-react';
-import type { DashboardStats, RevenueData, Order, ActivityLog, Table } from '@/lib/types';
+import { useQuery } from "@tanstack/react-query";
+import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { OrderList } from "@/components/dashboard/order-card";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { TableStats } from "@/components/dashboard/table-grid";
+import { api } from "@/lib/api/mock-data";
+import type {
+  DashboardStats,
+  RevenueData,
+  Order,
+  ActivityLog,
+  Table,
+} from "@/lib/types";
+import { useTableStats } from "@/hooks/shared/stats/getTableStats";
+import { useDashboardStats } from "@/hooks/shared/stats/getDashboardStats";
+import { useRevenueChart } from "@/hooks/admin/analytics/getRevenueAnalytic";
+import { useState } from "react";
 
 export default function AdminDashboard() {
-  const { data: stats } = useQuery<DashboardStats>({
-    queryKey: ['dashboard-stats'],
-    queryFn: () => api.getDashboardStats(),
-  });
+  const { data: dashboardStats } = useDashboardStats();
+  const dashboard = dashboardStats?.data;
 
-  const { data: revenueData } = useQuery<RevenueData[]>({
-    queryKey: ['revenue-data'],
-    queryFn: () => api.getRevenueData(),
-  });
+  const { data: tableStats } = useTableStats();
+  const tableData = tableStats?.data;
+
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "1y" | "all">(
+    "30d",
+  );
+
+  const { data: getRevenue } = useRevenueChart(period);
+  const revenueData = getRevenue?.data;
 
   const { data: orders } = useQuery<Order[]>({
-    queryKey: ['active-orders'],
+    queryKey: ["active-orders"],
     queryFn: () => api.getActiveOrders(),
   });
 
   const { data: activities } = useQuery<ActivityLog[]>({
-    queryKey: ['activity-log'],
+    queryKey: ["activity-log"],
     queryFn: () => api.getActivityLog(),
-  });
-
-  const { data: tables } = useQuery<Table[]>({
-    queryKey: ['tables'],
-    queryFn: () => api.getTables(),
   });
 
   return (
@@ -46,42 +52,45 @@ export default function AdminDashboard() {
       <DashboardHeader
         title="Dashboard"
         description="Overview of your restaurant performance"
-      >
-      </DashboardHeader>
+      ></DashboardHeader>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Revenue"
-          value={stats ? `$${stats.totalRevenue.toLocaleString()}` : '-'}
-          change={stats?.revenueChange}
+          value={dashboard ? `Rs ${dashboard.totalRevenue}` : "-"}
+          change={dashboard?.revenueChange}
           icon={<DollarSign className="size-4" />}
         />
         <StatsCard
           title="Total Orders"
-          value={stats?.totalOrders || '-'}
-          change={stats?.ordersChange}
+          value={dashboard?.totalOrders || "-"}
+          change={dashboard?.ordersChange}
           icon={<ShoppingCart className="size-4" />}
         />
         <StatsCard
           title="Avg. Order Value"
-          value={stats ? `$${stats.averageOrderValue.toFixed(2)}` : '-'}
+          value={dashboard ? `Rs ${dashboard.averageOrderValue}` : "-"}
           icon={<TrendingUp className="size-4" />}
         />
         <StatsCard
           title="Active Orders"
-          value={stats?.activeOrders || '-'}
+          value={dashboard?.activeOrders || "-"}
           icon={<Users className="size-4" />}
         />
       </div>
 
       {/* Table Status */}
-      {tables && <TableStats tables={tables} />}
+      {tableStats && <TableStats stats={tableData} />}
 
       {/* Charts and Activity */}
       <div className="grid gap-6 lg:grid-cols-7">
         <div className="lg:col-span-4">
-          {revenueData && <RevenueChart data={revenueData} />}
+          <RevenueChart
+            data={revenueData ?? []}
+            period={period}
+            setPeriod={setPeriod}
+          />
         </div>
         <div className="lg:col-span-3">
           {activities && <ActivityFeed activities={activities} />}
@@ -99,7 +108,7 @@ export default function AdminDashboard() {
         )}
         {orders && (
           <OrderList
-            orders={orders.filter(o => o.status === 'ready')}
+            orders={orders.filter((o) => o.status === "ready")}
             title="Ready for Pickup"
             emptyMessage="No orders ready"
           />
@@ -108,4 +117,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

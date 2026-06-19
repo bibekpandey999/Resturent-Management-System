@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
@@ -51,6 +51,8 @@ export default function WaiterMenuPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
+  console.log("Auth user data", user);
 
   const enrichedMenuItems = useMemo(() => {
     return (menuItems ?? []).map((item: TMenuItem) => ({
@@ -115,19 +117,16 @@ export default function WaiterMenuPage() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(createOrderSchema),
     defaultValues: {
       customerName: "",
       notes: "",
       tableId: selectedTable?._id || "",
-      waiterId: "2",
       items: [],
     },
     values: {
       customerName: "",
       notes: "",
       tableId: selectedTable?._id || "",
-      waiterId: user?.id || "",
       items: orderItems,
     },
   });
@@ -196,7 +195,7 @@ export default function WaiterMenuPage() {
     mutate({
       tableId: data.tableId,
       customerName: data.customerName || "Guest",
-      waiterId: data.waiterId,
+      waiterId: user?.id || "",
       notes: data.notes || undefined,
       items: data.items,
     });
@@ -422,7 +421,7 @@ export default function WaiterMenuPage() {
                   </div>
 
                   {/* 3. Added helpful error alerts at bottom if anything fails schema rules */}
-                  {Object.keys(errors).length > 0 && (
+                  {/* {Object.keys(errors).length > 0 && (
                     <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg text-xs space-y-1">
                       <p className="font-semibold">
                         Please fix validation errors:
@@ -432,7 +431,7 @@ export default function WaiterMenuPage() {
                         <p>• You must add menu items to the order.</p>
                       )}
                     </div>
-                  )}
+                  )} */}
 
                   <Button
                     type="submit"

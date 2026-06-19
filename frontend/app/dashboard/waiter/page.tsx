@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useAllTables } from "@/hooks/admin/table/getAllTables";
 import { TableStatus, TTable } from "@/lib/types/table.types";
+import { useTableStats } from "@/hooks/shared/stats/getTableStats";
 
 const tableStatusOptions: { value: TableStatus | "all"; label: string }[] = [
   { value: "all", label: "All statuses" },
@@ -36,6 +37,8 @@ export default function WaiterDashboard() {
   const handleNewOrder = () => {
     setShowTablePrompt(true);
   };
+
+  const { data: tableStats } = useTableStats();
 
   const { data: tableData } = useAllTables({});
 
@@ -105,13 +108,15 @@ export default function WaiterDashboard() {
         />
         <StatsCard
           title="Available Tables"
-          value={tables?.filter((t: TTable) => t.status === "available").length || 0}
+          value={
+            tables?.filter((t: TTable) => t.status === "available").length || 0
+          }
           icon={<Table2 className="size-4" />}
         />
       </div>
 
       {/* Table Status */}
-      {tables && <TableStats tables={tables} />}
+      {tables && <TableStats stats={tableStats?.data} />}
 
       {tables && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

@@ -15,7 +15,6 @@ import { tableApi } from "@/lib/api/table.api";
 import { toast } from "@/hooks/use-toast";
 import FormHeader from "@/components/shared/formHeader";
 import { TUpdateTableSchema, updateTableSchema } from "@/lib/validations/table.validation";
-import { TTable } from "@/lib/types/table.types";
 import { TRoom } from "@/lib/types/room.types";
 import clsx from "clsx";
 
@@ -40,7 +39,7 @@ export default function TableEditForm({ tableId, onClose, size = "lg" }: Props) 
     resolver: zodResolver(updateTableSchema),
     defaultValues: {
       name: "",
-      section: "",
+      sectionId: "",
       capacity: 1,
       status: "available",
     },
@@ -51,7 +50,7 @@ export default function TableEditForm({ tableId, onClose, size = "lg" }: Props) 
 
     reset({
       name: table.name,
-      section: table.sectionId || table.section,
+      sectionId: table.sectionId || table.section,
       capacity: table.capacity,
       status: table.status,
     });
@@ -84,7 +83,7 @@ export default function TableEditForm({ tableId, onClose, size = "lg" }: Props) 
   const onSubmit = (data: TUpdateTableSchema) => {
     const formData = new FormData();
     formData.append("name", data.name || "");
-    formData.append("section", data.section || "");
+    formData.append("sectionId", data.sectionId || "");
     formData.append("capacity", String(data.capacity || 1));
     formData.append("status", data.status || "available");
 
@@ -122,20 +121,20 @@ export default function TableEditForm({ tableId, onClose, size = "lg" }: Props) 
                 {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
               </div>
               <div>
-                <Label htmlFor="edit-table-section">Section</Label>
+                <Label htmlFor="edit-table-section">Room</Label>
                 <select
                   id="edit-table-section"
-                  {...register("section")}
+                  {...register("sectionId")}
                   className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  <option value="">Select section</option>
+                  <option value="">Select room</option>
                   {rooms.map((room: TRoom) => (
                     <option key={room._id} value={room._id}>
                       {room.name}
                     </option>
                   ))}
                 </select>
-                {errors.section && <p className="mt-1 text-xs text-destructive">{errors.section.message}</p>}
+                {errors.sectionId && <p className="mt-1 text-xs text-destructive">{errors.sectionId.message}</p>}
               </div>
               <div>
                 <Label htmlFor="edit-table-capacity">Capacity</Label>

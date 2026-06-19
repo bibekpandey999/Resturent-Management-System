@@ -98,6 +98,47 @@ class TableRepository {
   async countByRoom(sectionId: string) {
     return this.model.countDocuments({ sectionId });
   }
+  async getTableStats() {
+    try {
+      const stats = await this.model.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+      const result = {
+        total: 0,
+        available: 0,
+        occupied: 0,
+        reserved: 0,
+      };
+
+      stats.forEach((item) => {
+        result.total += item.count;
+
+        if (item._id === "available") {
+          result.available = item.count;
+        }
+
+        if (item._id === "occupied") {
+          result.occupied = item.count;
+        }
+
+        if (item._id === "reserved") {
+          result.reserved = item.count;
+        }
+      });
+
+      return result;
+    } catch (error) {
+      throw new Error(`Error fetching table stats: ${error}`);
+    }
+  }
 }
 
 export default new TableRepository();

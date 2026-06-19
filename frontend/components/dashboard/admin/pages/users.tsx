@@ -36,8 +36,10 @@ import { Download, Edit, Eye, Trash, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/shared/confirmDialog";
 import { useDeleteUser } from "@/hooks/admin/users/removeUser";
 import UserEditForm from "../editForm/user.edit";
+import TablePagination from "@/components/shared/pagination";
 
 export default function UsersPage() {
+  const [page, setPage] = useState(1);
   const [filter, setFilter] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [formVisible, setFormVisible] = useState(false);
@@ -112,6 +114,59 @@ export default function UsersPage() {
         setItemToRemove(null);
       },
     });
+  };
+
+  const downloadRecords = () => {
+    if (!users?.length) return;
+
+    const headers = [
+      "SN",
+      "User ID",
+      "Name",
+      "Email",
+      "Phone",
+      "Role",
+      "Status",
+      "Profile Image",
+      "Created At",
+    ];
+
+    const rows = users.map((user: TUser, index: number) => [
+      index + 1,
+      user._id,
+      user.name,
+      user.email,
+      user.phone,
+      user.role,
+      user.status,
+      user.profile,
+      formatDate(user.createdAt),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: string[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `users-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -274,8 +329,8 @@ export default function UsersPage() {
             </select>
             <Button
               variant="default"
-              className="bg-green-600 text-white hover:bg-green-700"
-              onClick={() => setFilter("")}
+              className="bg-green-600 text-white hover:bg-green-700 mb-1"
+              onClick={downloadRecords}
             >
               Export
               <Download className="h-4 w-4" />
@@ -367,6 +422,15 @@ export default function UsersPage() {
             )}
           </TableBody>
         </Table>
+        {userData?.pagination?.totalPages > 1 && (
+          <div className="mt-4">
+            <TablePagination
+              page={page}
+              totalPages={userData?.pagination?.totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
         {editId && (
           <UserEditForm userId={editId} onClose={() => setEditId(null)} />
         )}

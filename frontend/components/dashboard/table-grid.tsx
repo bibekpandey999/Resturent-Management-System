@@ -1,7 +1,8 @@
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { TableStatus, TTable } from '@/lib/types/table.types';
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TableStatus, TTable } from "@/lib/types/table.types";
+import { TTableStats } from "@/lib/types/stats.types";
 
 interface TableGridProps {
   tables: TTable[];
@@ -36,7 +37,7 @@ interface TableCardProps {
 }
 
 export function TableCard({ table, onClick }: TableCardProps) {
-  const status = statusConfig[table.status];  
+  const status = statusConfig[table.status];
 
   return (
     <Card
@@ -64,13 +65,16 @@ export function TableCard({ table, onClick }: TableCardProps) {
 
 export function TableGrid({ tables, onTableClick, title }: TableGridProps) {
   // Group tables by section
-  const sections = tables.reduce((acc, table) => {
-    if (!acc[table.section]) {
-      acc[table.section] = [];
-    }
-    acc[table.section].push(table);
-    return acc;
-  }, {} as Record<string, TTable[]>);
+  const sections = tables.reduce(
+    (acc, table) => {
+      if (!acc[table.section]) {
+        acc[table.section] = [];
+      }
+      acc[table.section].push(table);
+      return acc;
+    },
+    {} as Record<string, TTable[]>,
+  );
 
   return (
     <Card className="bg-card border-border">
@@ -106,35 +110,27 @@ export function TableGrid({ tables, onTableClick, title }: TableGridProps) {
 }
 
 interface TableStatsProps {
-  tables: TTable[];
+  stats: TTableStats;
 }
 
-export function TableStats({ tables }: TableStatsProps) {
-  const stats = {
-    total: tables.length,
-    available: tables.filter(t => t.status === 'available').length,
-    occupied: tables.filter(t => t.status === 'occupied').length,
-    reserved: tables.filter(t => t.status === 'reserved').length,
-    // cleaning: tables.filter(t => t.status === 'cleaning').length,
-  };
-
+export function TableStats({ stats }: TableStatsProps) {
   return (
     <div className="flex flex-wrap gap-2">
       <Badge variant="outline" className="bg-card">
-        Total: {stats.total}
+        Total: {stats?.total}
       </Badge>
+
       <Badge variant="outline" className={statusConfig.available.className}>
-        Available: {stats.available}
+        Available: {stats?.available}
       </Badge>
+
       <Badge variant="outline" className={statusConfig.occupied.className}>
-        Occupied: {stats.occupied}
+        Occupied: {stats?.occupied}
       </Badge>
+
       <Badge variant="outline" className={statusConfig.reserved.className}>
-        Reserved: {stats.reserved}
+        Reserved: {stats?.reserved}
       </Badge>
-      {/* <Badge variant="outline" className={statusConfig.cleaning.className}>
-        Cleaning: {stats.cleaning}
-      </Badge> */}
     </div>
   );
 }

@@ -28,7 +28,7 @@ import { roomApi } from "@/lib/api/room.api";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { TRoom } from "@/lib/types/room.types";
-import { Edit, Trash2 } from "lucide-react";
+import { Download, Edit, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/shared/confirmDialog";
 import { useDeleteRoom } from "@/hooks/admin/room/removeRoom";
 import SectionEditForm from "@/components/dashboard/admin/editForm/section.edit";
@@ -89,6 +89,53 @@ export default function SectionsPage() {
 
   const onSubmit = (data: TCreateRoomSchema) => {
     mutate(data);
+  };
+
+  const downloadRecords = () => {
+    if (!rooms?.length) return;
+
+    const headers = [
+      "SN",
+      "Section ID",
+      "Section Name",
+      "Description",
+      "Table Count",
+      "Status",
+    ];
+
+    const rows = rooms.map((section: TRoom, index: number) => [
+      index + 1,
+      section._id,
+      section.name,
+      section.description,
+      section.tableCount,
+      section.isActive,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: string[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `table-sections-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -173,13 +220,24 @@ export default function SectionsPage() {
 
       <PageSection title="Restaurant Sections">
         <div className="space-y-4">
-          <SearchField
-            id="section-search"
-            label="Search sections"
-            value={filter}
-            onChange={setFilter}
-            placeholder="Search by name or description"
-          />
+          <div className="flex items-end gap-2">
+            <SearchField
+              id="section-search"
+              label="Search sections"
+              value={filter}
+              onChange={setFilter}
+              placeholder="Search by name or description"
+              className="w-full"
+            />
+            <Button
+              variant="default"
+              className="bg-green-600 text-white hover:bg-green-700 mb-1"
+              onClick={downloadRecords}
+            >
+              Export
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {rooms.length === 0 ? (
               <Card className="px-6 py-4 text-center text-gray-500">

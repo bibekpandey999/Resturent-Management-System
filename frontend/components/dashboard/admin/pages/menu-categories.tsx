@@ -29,7 +29,7 @@ import {
 import { menuCategoryApi } from "@/lib/api/menu-category.api";
 import { toast } from "@/hooks/use-toast";
 import { TMenuCategory } from "@/lib/types/menu-category.types";
-import { Edit, Trash2 } from "lucide-react";
+import { Download, Edit, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/shared/confirmDialog";
 import { useDeleteMenuCategory } from "@/hooks/admin/menu-category/removeMenuCategory";
 import MenuCategoryEditForm from "@/components/dashboard/admin/editForm/menu-category.edit";
@@ -99,6 +99,51 @@ export default function MenuCategoriesPage() {
     [categories, filter],
   );
 
+  const downloadRecords = () => {
+    if (!categories?.length) return;
+
+    const headers = [
+      "SN",
+      "Category ID",
+      "Category Name",
+      "Description",
+      "Item Count",
+    ];
+
+    const rows = categories.map((category: TMenuCategory, index: number) => [
+      index + 1,
+      category._id,
+      category.name,
+      category.description,
+      category.itemCount,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: string[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `menu-categories-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <DashboardHeader
@@ -166,13 +211,24 @@ export default function MenuCategoriesPage() {
 
       <PageSection title="Category Catalog">
         <div className="space-y-4">
-          <SearchField
-            id="category-search"
-            label="Search categories"
-            value={filter}
-            onChange={setFilter}
-            placeholder="Search by name or description"
-          />
+          <div className="flex items-end gap-2">
+            <SearchField
+              id="category-search"
+              label="Search categories"
+              value={filter}
+              onChange={setFilter}
+              placeholder="Search by name or description"
+              className="w-full"
+            />
+            <Button
+              variant="default"
+              className="bg-green-600 text-white hover:bg-green-700 mb-1"
+              onClick={downloadRecords}
+            >
+              Export
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((category: TMenuCategory) => (
               <Card key={category._id} className="bg-card border-border">

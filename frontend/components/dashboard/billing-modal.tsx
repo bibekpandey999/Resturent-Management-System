@@ -24,9 +24,9 @@ export default function PrintInvoice({ order }: any) {
             <span>Estd: 2068/2/21</span>
             <span>PAN: 123S34Ft-V21</span>
           </div>
-          <h1 className="text-xl font-bold tracking-wider">DINEFLOW</h1>
+          <h1 className="text-xl font-bold tracking-wider">Local Vibes</h1>
           <p className="text-[10px] text-gray-600">
-            Restaurant Management System
+            Butwal 10, Kalikanagar
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function PrintInvoice({ order }: any) {
         <div className="py-2 border-b border-gray-200">
           <div className="flex justify-between">
             <span>Table</span>
-            <span>{order.table?.number}</span>
+            <span>{order.table?.name}</span>
           </div>
 
           <div className="flex justify-between">

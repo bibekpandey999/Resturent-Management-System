@@ -1,0 +1,38 @@
+// constants/ingredient-units.ts
+
+export const INGREDIENT_UNITS = [
+  "g",
+  "kg",
+  "mg",
+  "ml",
+  "ltr",
+  "cup",
+  "tbsp",
+  "tsp",
+  "pcs",
+  "piece",
+  "dozen",
+  "packet",
+  "pack",
+  "box",
+  "bottle",
+  "can",
+  "jar",
+  "bag",
+  "bunch",
+  "slice",
+  "leaf",
+  "clove",
+  "tray",
+  "portion",
+  "serving",
+  "sack",
+  "carton",
+  "roll",
+  "whole",
+  "fillet",
+  "loaf",
+  "unit",
+] as const;
+
+export type TIngredientUnit = (typeof INGREDIENT_UNITS)[number];

@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { api } from "@/lib/api/mock-data";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import {
   Table,
   TableBody,
@@ -16,23 +12,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { statusStyle, MetricCard, PageSection, SearchField, TableBadge, formatDate } from "@/components/dashboard/admin/shared";
-import type { AdminDashboardStats, Branch, Expense, Ingredient, MenuCategory, MenuItem, MenuModifier, Notification, Order, PurchaseOrder, Reservation, Role, SalesByCategory, StaffMember, StockMovement, Supplier, Table as DiningTable, TableSection, ManagedUser, RevenueData } from "@/lib/types";
+
+import { formatDate, PageSection } from "@/components/dashboard/admin/shared";
+import { useAllStockMovement } from "@/hooks/admin/stock-movement/getAllStockMovement";
+import { TStockMovement } from "@/lib/types/stock-movement.types";
+import { useAllIngredient } from "@/hooks/admin/ingredient/getAllIngrediets";
+import { TIngredient } from "@/lib/types/ingredient.types";
 
 export default function InventoryAlertsPage() {
-  const { data: alerts = [] } = useQuery<Ingredient[]>({ queryKey: ['low-stock'], queryFn: () => api.getLowStockIngredients() });
+  const { data: ingredientData } = useAllIngredient({
+    search: "",
+  });
+
+  const ingredients = ingredientData?.data || [];
+
+  const lowStockIngredients = ingredients.filter(
+    (ingredient: TIngredient) =>
+      ingredient.currentStock <= ingredient.minimumStock,
+  );
 
   return (
     <div className="space-y-6">
-      <DashboardHeader title="Low Stock Alerts" description="Catch ingredients that need immediate reorder." />
+      <DashboardHeader
+        title="Low Stock Alerts"
+        description="Catch ingredients that need immediate reorder."
+      />
       <PageSection title="Alerts">
         <Table>
           <TableHeader>
@@ -40,18 +44,32 @@ export default function InventoryAlertsPage() {
               <TableHead>Ingredient</TableHead>
               <TableHead>Current Stock</TableHead>
               <TableHead>Minimum Stock</TableHead>
-              <TableHead>Reorder Level</TableHead>
+              <TableHead>Last Added</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {alerts.map((ingredient) => (
-              <TableRow key={ingredient.id}>
-                <TableCell>{ingredient.name}</TableCell>
-                <TableCell>{ingredient.currentStock}</TableCell>
-                <TableCell>{ingredient.minimumStock}</TableCell>
-                <TableCell>{ingredient.reorderLevel}</TableCell>
+            {lowStockIngredients.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No low stock found.
+                </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              lowStockIngredients.map((ingredient: TIngredient) => (
+                <TableRow key={ingredient._id}>
+                  <TableCell>{ingredient.name}</TableCell>
+                  <TableCell className="text-red-600">
+                    {ingredient.currentStock}
+                  </TableCell>
+                  <TableCell>{ingredient.minimumStock}</TableCell>
+                  <TableCell>
+                    {ingredient.lastStockInDate
+                      ? new Date(ingredient.lastStockInDate).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </PageSection>

@@ -53,7 +53,7 @@ export function MetricCard({ title, value, description }: { title: string; value
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <p className="text-3xl font-semibold text-foreground">{value}</p>
+        <p className="text-2xl font-semibold text-foreground">{value}</p>
       </CardContent>
     </Card>
   );

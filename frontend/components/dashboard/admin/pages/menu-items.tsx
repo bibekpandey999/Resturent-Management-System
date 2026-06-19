@@ -19,6 +19,7 @@ import {
   statusStyle,
   PageSection,
   SearchField,
+  formatDate,
 } from "@/components/dashboard/admin/shared";
 import { useAllMenuItems } from "@/hooks/admin/menu-item/getAllMenuItems";
 import { useAllMenuCategories } from "@/hooks/admin/menu-category/getAllMenuCategories";
@@ -141,6 +142,59 @@ export default function MenuItemsPage() {
       ),
     [items, filter, categoryMap],
   );
+
+  const downloadRecords = () => {
+    if (!items?.length) return;
+
+    const headers = [
+      "SN",
+      "Item ID",
+      "Name",
+      "Description",
+      "Category ID",
+      "Price (Rs)",
+      "Status",
+      "Image",
+      "Created At",
+    ];
+
+    const rows = items.map((item: TMenuItem, index: number) => [
+      index + 1,
+      item._id,
+      item.name,
+      item.description,
+      categoryMap[item.categoryId] ?? "Unknown",
+      item.price,
+      item.status,
+      item.image,
+      formatDate(item.createdAt),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: string[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `menu-items-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -270,18 +324,18 @@ export default function MenuItemsPage() {
 
       <PageSection title="Menu Items">
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-end gap-2">
             <SearchField
               id="food-search"
               value={filter}
               onChange={setFilter}
-              className="w-full sm:w-auto flex-1"
+              className="w-full"
               placeholder="Search by name, category or status"
             />
             <Button
               variant="default"
-              className="bg-green-600 text-white hover:bg-green-700"
-              onClick={() => setFilter("")}
+              className="bg-green-600 text-white hover:bg-green-700 mb-1"
+              onClick={downloadRecords}
             >
               Export
               <Download className="h-4 w-4" />
@@ -321,7 +375,10 @@ export default function MenuItemsPage() {
                     <TableCell>
                       {categoryMap[item.categoryId] ?? "Unknown"}
                     </TableCell>
-                    <TableCell className="italic"><span className="text-[13px]">Rs </span>{item.price.toFixed(2)}</TableCell>
+                    <TableCell className="italic">
+                      <span className="text-[13px]">Rs </span>
+                      {item.price.toFixed(2)}
+                    </TableCell>
                     <TableCell>
                       <span
                         className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyle(item.status)}`}

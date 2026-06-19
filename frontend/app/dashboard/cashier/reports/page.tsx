@@ -39,6 +39,7 @@ import { CheckSquare, CreditCard, Download, Eye } from "lucide-react";
 import { formatDate } from "@/components/dashboard/admin/shared";
 import { useUpdatePaymentStatus } from "@/hooks/cahsier/updatePaymentStatus";
 import TablePagination from "@/components/shared/pagination";
+import PrintInvoice from "@/components/dashboard/billing-modal";
 
 const paymentStatusOptions: { value: PaymentStatus | "all"; label: string }[] =
   [
@@ -358,72 +359,7 @@ export default function CashierReportsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.map((order: TOrder) => (
-                <TableRow key={order._id}>
-                  <TableCell>{order.orderNumber}</TableCell>
-                  <TableCell>{order.table?.name}</TableCell>
-                  <TableCell>
-                    {/* @ts-ignore */}
-                    {(order as any).customerName || "-"}
-                  </TableCell>
-                  <TableCell>{order.waiter?.name}</TableCell>
-                  <TableCell>Rs {order.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        order.paymentStatus === "paid"
-                          ? "bg-success/20 text-success"
-                          : "bg-warning/20 text-warning"
-                      }
-                    >
-                      {order.paymentStatus}
-                    </Badge>
-                  </TableCell>
-                  {/* <TableCell>{order.paymentMethod || "N/A"}</TableCell> */}
-                  <TableCell>{formatDate(order.createdAt)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        className="text-gray-300 cursor-pointer hover:bg-primary/90 hover:text-white"
-                        size="icon"
-                        onClick={() =>
-                          setSelectedOrder(
-                            orders.find((o: TOrder) => o._id === order._id),
-                          )
-                        }
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {order.paymentStatus === "paid" ? (
-                        <Button
-                          variant="secondary"
-                          className="text-gray-300 cursor-pointer hover:text-white"
-                          size="icon"
-                          onClick={() => {
-                            setPrintOrder(order);
-                            setTimeout(() => {
-                              handlePrintInvoice();
-                            }, 100);
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      ) : ( 
-                        <Button
-                          variant="secondary"
-                          className="text-gray-300 cursor-pointer hover:bg-green-700 hover:text-white"
-                          size="icon"
-                          onClick={() => updateOrderStatus(order._id)}
-                        >
-                          <CreditCard className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredOrders.length === 0 && (
+              {filteredOrders.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={8}
@@ -432,6 +368,72 @@ export default function CashierReportsPage() {
                     No records found.
                   </TableCell>
                 </TableRow>
+              ) : (
+                filteredOrders.map((order: TOrder) => (
+                  <TableRow key={order._id}>
+                    <TableCell>{order.orderNumber}</TableCell>
+                    <TableCell>{order.table?.name}</TableCell>
+                    <TableCell>
+                      {/* @ts-ignore */}
+                      {(order as any).customerName || "-"}
+                    </TableCell>
+                    <TableCell>{order.waiter?.name}</TableCell>
+                    <TableCell>Rs {order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          order.paymentStatus === "paid"
+                            ? "bg-success/20 text-success"
+                            : "bg-warning/20 text-warning"
+                        }
+                      >
+                        {order.paymentStatus}
+                      </Badge>
+                    </TableCell>
+                    {/* <TableCell>{order.paymentMethod || "N/A"}</TableCell> */}
+                    <TableCell>{formatDate(order.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          className="text-gray-300 cursor-pointer hover:bg-primary/90 hover:text-white"
+                          size="icon"
+                          onClick={() =>
+                            setSelectedOrder(
+                              orders.find((o: TOrder) => o._id === order._id),
+                            )
+                          }
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {order.paymentStatus === "paid" ? (
+                          <Button
+                            variant="secondary"
+                            className="text-gray-300 cursor-pointer hover:text-white"
+                            size="icon"
+                            onClick={() => {
+                              setPrintOrder(order);
+                              setTimeout(() => {
+                                handlePrintInvoice();
+                              }, 100);
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            className="text-gray-300 cursor-pointer hover:bg-green-700 hover:text-white"
+                            size="icon"
+                            onClick={() => updateOrderStatus(order._id)}
+                          >
+                            <CreditCard className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -520,7 +522,7 @@ export default function CashierReportsPage() {
         }}
       >
         <div ref={invoiceRef}>
-          <OrderInvoicePrint order={printOrder} />
+          <PrintInvoice order={printOrder} />
         </div>
       </div>
     </div>

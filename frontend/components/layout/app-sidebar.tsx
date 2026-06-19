@@ -146,12 +146,6 @@ const adminNavGroups: NavGroup[] = [
         icon: Pizza,
         roles: ["admin"],
       },
-      // {
-      //   title: "Modifiers",
-      //   href: "/dashboard/admin/menu/modifiers",
-      //   icon: Sliders,
-      //   roles: ["admin"],
-      // },
     ],
   },
   {
@@ -327,7 +321,6 @@ const adminNavGroups: NavGroup[] = [
   },
 ];
 
-// Get role display name
 function getRoleDisplayName(role: UserRole): string {
   const names: Record<UserRole, string> = {
     admin: "Administrator",
@@ -349,7 +342,7 @@ function getInitials(name: string): string {
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
 
   if (!user) return null;
 
@@ -459,22 +452,6 @@ export function AppSidebar() {
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  Switch Role (Dev)
-                </DropdownMenuLabel>
-                {(["admin", "waiter", "kitchen", "cashier"] as UserRole[]).map(
-                  (role) => (
-                    <DropdownMenuItem
-                      key={role}
-                      onClick={() => switchRole(role)}
-                      className={user.role === role ? "bg-accent" : ""}
-                    >
-                      {getRoleDisplayName(role)}
-                    </DropdownMenuItem>
-                  ),
-                )}
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-destructive">
                   <LogOut className="mr-2 size-4" />
                   Log out

@@ -1,10 +1,10 @@
+import { AuthData } from "@/context/auth-context";
 import { apiClient } from "@/utils/apiClient";
-import type { User } from "@/lib/types";
 
 export interface LoginResponse {
   success: boolean;
   message: string;
-  user: User;
+  user: AuthData;
   token: string;
 }
 
@@ -15,7 +15,7 @@ export interface LogoutResponse {
 
 export interface MeResponse {
   success: boolean;
-  user: User;
+  user: AuthData;
 }
 
 export async function loginUser(email: string, password: string) {

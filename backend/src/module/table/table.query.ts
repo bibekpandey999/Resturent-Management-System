@@ -1,7 +1,6 @@
 import { AppRouteQueryImplementation } from "@ts-rest/express";
 import { tableContract } from "../../contract/table/table.contract";
 import tableRepository from "../../repository/table.repository";
-import roomRepository from "../../repository/room.repository";
 
 export const getAllTables: AppRouteQueryImplementation<
   typeof tableContract.getAllTables

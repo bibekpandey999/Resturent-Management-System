@@ -32,7 +32,7 @@ import { toast } from "@/hooks/use-toast";
 import { TTable } from "@/lib/types/table.types";
 import { useAllRooms } from "@/hooks/admin/room/getAllRooms";
 import { TRoom } from "@/lib/types/room.types";
-import { Cross, Edit, Trash2 } from "lucide-react";
+import { Cross, Download, Edit, Trash2 } from "lucide-react";
 import { useDeleteTable } from "@/hooks/admin/table/removeTable";
 import ConfirmDialog from "@/components/shared/confirmDialog";
 import TableEditForm from "@/components/dashboard/admin/editForm/table.edit";
@@ -108,6 +108,55 @@ export default function TablesPage() {
       ),
     [tables, filter],
   );
+
+  const downloadRecords = () => {
+    if (!tables?.length) return;
+
+    const headers = [
+      "SN",
+      "Table ID",
+      "Table Name",
+      "Capacity",
+      "Status",
+      "Section",
+      "Section ID",
+    ];
+
+    const rows = tables.map((table: TTable, index: number) => [
+      index + 1,
+      table._id,
+      table.name,
+      table.capacity,
+      table.status,
+      table.section,
+      table.sectionId,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: string[]) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `tables-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -212,13 +261,24 @@ export default function TablesPage() {
 
       <PageSection title="Table List">
         <div className="space-y-4">
-          <SearchField
-            id="table-search"
-            label="Search tables"
-            value={filter}
-            onChange={setFilter}
-            placeholder="Search by name, section or status"
-          />
+          <div className="flex items-end gap-2">
+            <SearchField
+              id="table-search"
+              label="Search tables"
+              value={filter}
+              onChange={setFilter}
+              placeholder="Search by name, section or status"
+              className="w-full"
+            />
+            <Button
+              variant="default"
+              className="bg-green-600 text-white hover:bg-green-700 mb-1"
+              onClick={downloadRecords}
+            >
+              Export
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>

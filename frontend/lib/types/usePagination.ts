@@ -6,4 +6,7 @@ export interface UsePaginationParams {
   filter?: string;
   roleFilter?: string;
   role?: string;
+  date?: Date;
+  category?: string;
+  supplier?: string;
 }

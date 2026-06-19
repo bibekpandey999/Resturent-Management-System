@@ -1,5 +1,5 @@
 "use client";
 
-import Page from "@/components/dashboard/admin/pages/inventory";
+import Page from "@/components/dashboard/admin/pages/ingredient";
 
 export default Page;

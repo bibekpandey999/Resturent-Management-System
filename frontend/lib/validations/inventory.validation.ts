@@ -1,50 +1,55 @@
 import { z } from "zod";
+import { ingredientUnits } from "@/data/measuringUnits";
 
-export const createInventorySchema = z.object({
-  name: z.string().trim().min(2).max(200),
-  category: z.string().trim().min(1).max(100),
-  unit: z.string().trim().min(1).max(50),
-  currentStock: z.number().min(0),
-  reorderLevel: z.number().min(0),
-  minimumStock: z.number().min(0),
-  supplierId: z.string().optional(),
+export const createIngredientSchema = z.object({
+  name: z.string().min(1, "Ingredient name is required").trim(),
+  category: z.string().min(1, "Category is required").trim().optional(),
+  unit: z.enum(ingredientUnits, {
+    required_error: "Unit is required",
+    invalid_type_error: "Invalid unit selected",
+  }),
+  currentStock: z.coerce.number().min(0, "Stock cannot be negative").default(0),
+  minimumStock: z.coerce
+    .number()
+    .min(0, "Minimum stock cannot be negative")
+    .default(0),
+  isActive: z.boolean().default(true),
 });
 
-export type TCreateInventorySchema = z.infer<typeof createInventorySchema>;
+export type TCreateIngredientSchema = z.infer<typeof createIngredientSchema>;
 
-export const inventorySchema = z.object({
+export const getIngredientByIdSchema = z.object({
   _id: z.string(),
   name: z.string(),
-  category: z.string(),
   unit: z.string(),
   currentStock: z.number(),
-  reorderLevel: z.number(),
   minimumStock: z.number(),
-  supplierId: z.string().optional(),
+  stockValue: z.number(),
+  category: z.string().optional(),
+  isActive: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
-export const getAllInventorySchema = z.array(inventorySchema);
+export type TGetIngredientByIdSchema = z.infer<typeof getIngredientByIdSchema>;
 
-export type TGetAllInventorySchema = z.infer<typeof getAllInventorySchema>;
+export const getAllIngredients = z.array(getIngredientByIdSchema);
 
-export const getInventoryByIdSchema = inventorySchema;
+export type TGetAllIngredientSchema = z.infer<typeof getAllIngredients>;
 
-export type TGetInventoryByIdSchema = z.infer<typeof getInventoryByIdSchema>;
-
-export const updateInventorySchema = z.object({
-  name: z.string().trim().min(2).max(200).optional(),
-  category: z.string().trim().min(1).max(100).optional(),
-  unit: z.string().trim().min(1).max(50).optional(),
+export const updateIngredientSchema = z.object({
+  name: z.string().optional(),
+  unit: z.enum(ingredientUnits).optional(),
   currentStock: z.number().min(0).optional(),
-  reorderLevel: z.number().min(0).optional(),
   minimumStock: z.number().min(0).optional(),
-  supplierId: z.string().optional(),
+  stockValue: z.number().min(0).optional(),
+  category: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
+export type TUpdateIngredientSchema = z.infer<typeof updateIngredientSchema>;
 
-export type TUpdateInventorySchema = z.infer<typeof updateInventorySchema>;
-
-export const deleteInventorySchema = z.object({
+export const deleteIngredientSchema = z.object({
   _id: z.string(),
 });
 
-export type TDeleteInventorySchema = z.infer<typeof deleteInventorySchema>;
+export type TDeleteIngredientSchema = z.infer<typeof deleteIngredientSchema>;

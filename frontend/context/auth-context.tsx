@@ -7,21 +7,22 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import type { User, UserRole } from "@/lib/types";
 import { getCurrentUser, loginUser, logoutUser } from "@/lib/api/auth.api";
+
+export type UserRole = 'admin' | 'waiter' | 'kitchen' | 'cashier';
 
 export interface AuthData {
   id: string;
   name: string;
   email: string;
   token: string;
-  role: string;
+  role: UserRole;
 }
 interface AuthContextType {
-  user: User | null;
+  user: AuthData | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<User | null>;
+  login: (email: string, password: string) => Promise<AuthData | null>;
   logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
 }
@@ -31,9 +32,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEY = "auth-data";
 const TOKEN_KEY = "token";
 
+// ... existing imports and interfaces
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authData, setAuthData] = useState<AuthData | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  // REMOVED: const [authData, setAuthData] = useState... (Unused state)
+  const [user, setUser] = useState<AuthData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -43,19 +46,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = localStorage.getItem(TOKEN_KEY);
 
         if (stored && token) {
-          const parsed: AuthData = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
 
-          setUser({
-            ...parsed,
-          } as unknown as User);
+          // Ensure that if the stored data uses 'id', your user object retains it
+          setUser(parsed as unknown as AuthData);
         } else {
           const response = await getCurrentUser();
 
-          if (response.success) {
-            setUser(response.user);
+          if (response.success && response.user) {
+            // If getMe backend returns _id, map it to id safely here too
+            const userData = {
+              ...response.user,
+              id: response.user.id || response.user._id,
+            } as unknown as AuthData;
+
+            setUser(userData);
           }
         }
-      } catch {
+      } catch (error) {
+        console.error("Failed to load auth state:", error);
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -66,30 +75,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<User | null> => {
+    async (email: string, password: string): Promise<AuthData | null> => {
       setIsLoading(true);
 
       try {
         const response = await loginUser(email, password);
 
         if (response.success) {
-          const user = response.user;
+          const backendUser = response.user;
           const token = response.token;
 
-          setUser(user);
-
-          const authData: AuthData = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
+          // FIX 1: Explicitly map backend _id to frontend id
+          const structuredUser: AuthData = {
+            id: backendUser._id || backendUser.id,
+            name: backendUser.name,
+            email: backendUser.email,
             token,
-            role: user.role,
+            role: backendUser.role,
           };
 
-          localStorage.setItem(TOKEN_KEY, token);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(authData));
+          // FIX 2: Set user state using the structured data uniform with AuthData/User
+          setUser(structuredUser as unknown as AuthData);
 
-          return user;
+          // Save perfectly mapped object to storage
+          localStorage.setItem(TOKEN_KEY, token);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(structuredUser));
+
+          return structuredUser as unknown as AuthData;
         }
 
         return null;
