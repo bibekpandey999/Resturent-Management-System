@@ -7,14 +7,12 @@ const mapTicket = (ticket: any) => {
   const table = ticket.tableId;
 
   return {
-    // Ticket
     _id: ticket._id?.toString?.(),
     ticketNumber: ticket.ticketNumber,
     status: ticket.status,
     printed: ticket.printed,
     createdAt: ticket.createdAt,
 
-    // Order (populated)
     orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
     orderNumber: order?.orderNumber || null,
     customerName: order?.customerName || "Guest",
@@ -25,7 +23,6 @@ const mapTicket = (ticket: any) => {
       name: order?.waiterId?.name || null,
     },
 
-    // Table (populated)
     table: {
       tableId: table?._id?.toString?.() || ticket.tableId?.toString?.(),
       tableName: table?.name || null,
@@ -33,11 +30,11 @@ const mapTicket = (ticket: any) => {
       status: table?.status || null,
     },
 
-    // Items (kitchen view + finance usable)
     items: (ticket.items ?? []).map((i: any) => ({
       menuItemId: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
       name: i.name,
       quantity: i.quantity,
+      price: i.price,
     })),
   };
 };
@@ -80,10 +77,17 @@ export const getLiveTickets: AppRouteQueryImplementation<
 > = async (req) => {
   try {
     const search = req.query.search as string | undefined;
+
+    const status = req.query.status as string | undefined;
+
+    if (status && status !== "all") {
+      req.query.status = status;
+    }
+
     const tickets = await kitchenTicketRepository.getAll({
       skip: 0,
       limit: 100,
-      status: "pending",
+      status: status || "pending",
       search,
     });
 

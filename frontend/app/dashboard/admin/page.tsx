@@ -22,6 +22,7 @@ import { useTableStats } from "@/hooks/shared/stats/getTableStats";
 import { useDashboardStats } from "@/hooks/shared/stats/getDashboardStats";
 import { useRevenueChart } from "@/hooks/admin/analytics/getRevenueAnalytic";
 import { useState } from "react";
+import { KitchenOrderList } from "@/components/dashboard/kitchen-order-card";
 
 export default function AdminDashboard() {
   const { data: dashboardStats } = useDashboardStats();
@@ -93,24 +94,22 @@ export default function AdminDashboard() {
           />
         </div>
         <div className="lg:col-span-3">
-          {activities && <ActivityFeed activities={activities} />}
+          {activities && <ActivityFeed />}
         </div>
       </div>
 
       {/* Recent Orders */}
       <div className="grid gap-6 lg:grid-cols-2">
         {orders && (
-          <OrderList
-            orders={orders.slice(0, 5)}
-            title="Recent Orders"
-            emptyMessage="No active orders"
+          <KitchenOrderList
+            title="Active Orders"
+            emptyMessage="No active orders right now"
           />
         )}
         {orders && (
           <OrderList
-            orders={orders.filter((o) => o.status === "ready")}
-            title="Ready for Pickup"
-            emptyMessage="No orders ready"
+            title="Completed Order"
+            emptyMessage="No orders today"
           />
         )}
       </div>

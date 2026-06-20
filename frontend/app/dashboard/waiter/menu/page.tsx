@@ -146,11 +146,15 @@ export default function WaiterMenuPage() {
 
       router.push("/dashboard/waiter/orders");
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Unable to create order",
-        description: "Please try again or select another table.",
         variant: "destructive",
+        title: "Unable to create order",
+        description:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Please try again or select another table.",
       });
     },
   });

@@ -1,4 +1,3 @@
-import MenuItem from "../model/menu-item.model";
 import KitchenTicketModel, { IKitchenTicket } from "../model/ticket.model";
 
 class KitchenTicketRepository {
@@ -28,11 +27,13 @@ class KitchenTicketRepository {
     search?: string;
   }) {
     try {
+
       const query: any = {};
 
       if (status && status !== "all") {
         query.status = status;
       }
+      
       if (search) {
         query.$or = [
           {
@@ -48,13 +49,18 @@ class KitchenTicketRepository {
             },
           },
           {
-            "items.name": {
-              $regex: search,
-              $options: "i",
+            items: {
+              $elemMatch: {
+                name: {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
             },
           },
         ];
       }
+
       const data = await this.model
         .find(query)
         .populate("orderId")
@@ -104,6 +110,17 @@ class KitchenTicketRepository {
         .sort({
           ticketNumber: 1,
         });
+    } catch (error) {
+      throw new Error(`Error fetching order tickets: ${error}`);
+    }
+  }
+
+  async getByTableID(tableId: string) {
+    try {
+      return await this.model
+        .find({ tableId })
+        .populate("tableId")
+        .sort({ ticketNumber: 1 });
     } catch (error) {
       throw new Error(`Error fetching order tickets: ${error}`);
     }

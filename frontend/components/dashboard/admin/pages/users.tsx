@@ -32,7 +32,7 @@ import {
 import { userApi } from "@/lib/api/user.api";
 import { toast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { Download, Edit, Eye, Trash, Trash2 } from "lucide-react";
+import { Download, Edit, Eye, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/shared/confirmDialog";
 import { useDeleteUser } from "@/hooks/admin/users/removeUser";
 import UserEditForm from "../editForm/user.edit";
@@ -78,11 +78,15 @@ export default function UsersPage() {
       });
       reset();
     },
-    onError: (err) => {
+    onError: (error: any) => {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: err.message || "Failed to add user.",
+        title: "Unable to add user",
+        description:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to add user.",
       });
     },
   });

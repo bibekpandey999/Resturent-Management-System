@@ -17,10 +17,13 @@ import { purchaseRouter } from "./purchase/purchase.router";
 import { orderRouter } from "./order/order.router";
 import { stockMovementRouter } from "./stock-movement/stock-movement.router";
 import { expenseRouter } from "./expenses/espenses.router";
+import { authRouter } from "./auth/auth.router";
+import { activityLogRouter } from "./logs/log.router";
 
 const s = initServer();
 
 export const router = s.router(contract, {
+  auth: authRouter,
   user: userRouter,
   room: roomRouter,
   table: tableRouter,
@@ -36,4 +39,5 @@ export const router = s.router(contract, {
   purchase: purchaseRouter,
   stockMovement: stockMovementRouter,
   expenses: expenseRouter,
+  logs: activityLogRouter,
 });

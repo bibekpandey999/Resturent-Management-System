@@ -84,11 +84,15 @@ function UserEditForm({ userId, onClose, size = "lg" }: Props) {
       });
       reset();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add user.",
+        description:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to add user.",
       });
     },
   });

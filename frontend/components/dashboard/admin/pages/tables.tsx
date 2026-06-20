@@ -75,11 +75,15 @@ export default function TablesPage() {
       });
       reset();
     },
-    onError: (err) => {
+    onError: (error: any) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add table.",
+        description:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to add table.",
       });
     },
   });

@@ -13,7 +13,10 @@ import { useMenuCategoryById } from "@/hooks/admin/menu-category/getMenuCategory
 import { menuCategoryApi } from "@/lib/api/menu-category.api";
 import { toast } from "@/hooks/use-toast";
 import FormHeader from "@/components/shared/formHeader";
-import { TUpdateMenuCategorySchema, updateMenuCategorySchema } from "@/lib/validations/menu-category.validation";
+import {
+  TUpdateMenuCategorySchema,
+  updateMenuCategorySchema,
+} from "@/lib/validations/menu-category.validation";
 import clsx from "clsx";
 
 type Props = {
@@ -22,7 +25,11 @@ type Props = {
   size?: "sm" | "md" | "lg" | "xl";
 };
 
-export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" }: Props) {
+export default function MenuCategoryEditForm({
+  categoryId,
+  onClose,
+  size = "lg",
+}: Props) {
   const { data: categoryData } = useMenuCategoryById(categoryId);
   const category = categoryData?.data;
 
@@ -51,8 +58,13 @@ export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" 
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: ({ categoryId, formData }: { categoryId: string; formData: FormData }) =>
-      menuCategoryApi.updateMenuCategoryApi(categoryId, formData),
+    mutationFn: ({
+      categoryId,
+      formData,
+    }: {
+      categoryId: string;
+      formData: FormData;
+    }) => menuCategoryApi.updateMenuCategoryApi(categoryId, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["menu-categories"] });
       toast({
@@ -66,7 +78,9 @@ export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" 
         variant: "destructive",
         title: "Error",
         description:
-          error?.response?.data?.error || error?.message ||
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
           "Failed to update category.",
       });
     },
@@ -96,7 +110,11 @@ export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" 
           },
         )}
       >
-        <FormHeader title="Edit Category" subtitle="Update menu category details." onClose={onClose} />
+        <FormHeader
+          title="Edit Category"
+          subtitle="Update menu category details."
+          onClose={onClose}
+        />
 
         <div className="max-h-[75vh] overflow-y-auto p-6">
           <PageSection title="Category Details">
@@ -108,7 +126,11 @@ export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" 
                   {...register("name")}
                   placeholder="e.g. Main Course"
                 />
-                {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
               <div className="md:col-span-2">
                 <Label htmlFor="edit-category-description">Description</Label>
@@ -117,7 +139,11 @@ export default function MenuCategoryEditForm({ categoryId, onClose, size = "lg" 
                   {...register("description")}
                   placeholder="Optional description"
                 />
-                {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
+                {errors.description && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {errors.description.message}
+                  </p>
+                )}
               </div>
             </div>
           </PageSection>

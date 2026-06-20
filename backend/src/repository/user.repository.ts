@@ -1,4 +1,4 @@
-import UserModel, { IUser } from "../model/user.model";
+import UserModel, { IUser, UserRole } from "../model/user.model";
 
 class UserRepository {
   private model;
@@ -66,6 +66,16 @@ class UserRepository {
   async getByEmail(email: string, includePassword = false) {
     try {
       const query = this.model.findOne({ email });
+      return includePassword ? query.select("+password") : query;
+    } catch (error) {
+      throw new Error(`Error fetching user: ${error}`);
+    }
+  }
+
+  async getByRole(role: UserRole, includePassword = false) {
+    try {
+      const query = this.model.find({ role });
+
       return includePassword ? query.select("+password") : query;
     } catch (error) {
       throw new Error(`Error fetching user: ${error}`);

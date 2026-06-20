@@ -65,11 +65,15 @@ export default function MenuCategoriesPage() {
       });
       reset();
     },
-    onError: (err) => {
+    onError: (error: any) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add category.",
+        description:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to add category.",
       });
     },
   });

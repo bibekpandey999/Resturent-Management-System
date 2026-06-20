@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Order, PaymentMethod, PaymentStatus } from "@/lib/types";
+import type { PaymentMethod } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +32,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useAllOrders } from "@/hooks/admin/orders/getAllOrders";
-import { TOrder } from "@/lib/types/order.types";
-import OrderInvoicePrint from "@/components/dashboard/admin/order-invoice-print";
+import { PaymentStatus, TOrder } from "@/lib/types/order.types";
 import { useReactToPrint } from "react-to-print";
-import { CheckSquare, CreditCard, Download, Eye } from "lucide-react";
+import { CreditCard, Download, Eye } from "lucide-react";
 import { formatDate } from "@/components/dashboard/admin/shared";
 import { useUpdatePaymentStatus } from "@/hooks/cahsier/updatePaymentStatus";
 import TablePagination from "@/components/shared/pagination";
@@ -46,6 +45,7 @@ const paymentStatusOptions: { value: PaymentStatus | "all"; label: string }[] =
     { value: "all", label: "All payments" },
     { value: "paid", label: "Paid" },
     { value: "pending", label: "Pending" },
+    { value: "partial", label: "Partial" },
   ];
 
 const paymentMethodOptions: { value: PaymentMethod | "all"; label: string }[] =
@@ -56,33 +56,6 @@ const paymentMethodOptions: { value: PaymentMethod | "all"; label: string }[] =
     { value: "mobile", label: "Mobile" },
     { value: "split", label: "Split" },
   ];
-
-function createCsvData(orders: Order[]) {
-  const headers = [
-    "Order #",
-    "Table",
-    "Server",
-    "Total",
-    "Payment status",
-    "Payment method",
-    "Completed at",
-  ];
-  const rows = orders.map((order) => [
-    order.orderNumber,
-    order.table.number.toString(),
-    order.waiter.name,
-    order.total.toFixed(2),
-    order.paymentStatus,
-    order.paymentMethod || "N/A",
-    formatDate(order.completedAt || order.createdAt),
-  ]);
-
-  return [headers, ...rows]
-    .map((row) =>
-      row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","),
-    )
-    .join("\n");
-}
 
 export default function CashierReportsPage() {
   const [page, setPage] = useState(1);
@@ -101,8 +74,6 @@ export default function CashierReportsPage() {
   const { data: orderData } = useAllOrders({
     page: 1,
     limit: 10,
-    search: searchTerm,
-    status: statusFilter,
   });
   const orders = orderData?.data || [];
 
@@ -353,7 +324,6 @@ export default function CashierReportsPage() {
                 <TableHead>Server</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Payment</TableHead>
-                {/* <TableHead>Method</TableHead> */}
                 <TableHead>Date</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>

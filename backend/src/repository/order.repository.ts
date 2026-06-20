@@ -261,7 +261,7 @@ class OrderRepository {
               $group: {
                 _id: null,
                 totalRevenue: {
-                  $sum: "$totalAmount",
+                  $sum: "$total",
                 },
                 totalOrders: {
                   $sum: 1,
@@ -286,7 +286,7 @@ class OrderRepository {
               $group: {
                 _id: null,
                 totalRevenue: {
-                  $sum: "$totalAmount",
+                  $sum: "$total",
                 },
                 totalOrders: {
                   $sum: 1,
@@ -378,7 +378,7 @@ class OrderRepository {
               },
             },
             revenue: {
-              $sum: "$subtotal",
+              $sum: "$total",
             },
             orders: {
               $sum: 1,

@@ -19,7 +19,7 @@ export interface MeResponse {
 }
 
 export async function loginUser(email: string, password: string) {
-  const response = await apiClient.post<LoginResponse>("/user/login", {
+  const response = await apiClient.post<LoginResponse>("/auth/login", {
     email,
     password,
   });
@@ -27,11 +27,11 @@ export async function loginUser(email: string, password: string) {
 }
 
 export async function logoutUser() {
-  const response = await apiClient.post<LogoutResponse>("/user/logout", {});
+  const response = await apiClient.post<LogoutResponse>("/auth/logout", {});
   return response.data;
 }
 
 export async function getCurrentUser() {
-  const response = await apiClient.get<MeResponse>("/user/me");
+  const response = await apiClient.get<MeResponse>("/auth/me");
   return response.data;
 }

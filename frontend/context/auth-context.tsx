@@ -32,10 +32,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEY = "auth-data";
 const TOKEN_KEY = "token";
 
-// ... existing imports and interfaces
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // REMOVED: const [authData, setAuthData] = useState... (Unused state)
   const [user, setUser] = useState<AuthData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,13 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (stored && token) {
           const parsed = JSON.parse(stored);
 
-          // Ensure that if the stored data uses 'id', your user object retains it
           setUser(parsed as unknown as AuthData);
         } else {
           const response = await getCurrentUser();
 
           if (response.success && response.user) {
-            // If getMe backend returns _id, map it to id safely here too
             const userData = {
               ...response.user,
               id: response.user.id || response.user._id,
@@ -85,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const backendUser = response.user;
           const token = response.token;
 
-          // FIX 1: Explicitly map backend _id to frontend id
           const structuredUser: AuthData = {
             id: backendUser._id || backendUser.id,
             name: backendUser.name,
@@ -94,10 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: backendUser.role,
           };
 
-          // FIX 2: Set user state using the structured data uniform with AuthData/User
           setUser(structuredUser as unknown as AuthData);
 
-          // Save perfectly mapped object to storage
           localStorage.setItem(TOKEN_KEY, token);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(structuredUser));
 
