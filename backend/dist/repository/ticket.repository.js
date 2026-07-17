@@ -37,9 +37,13 @@ class KitchenTicketRepository {
                         },
                     },
                     {
-                        "items.name": {
-                            $regex: search,
-                            $options: "i",
+                        items: {
+                            $elemMatch: {
+                                name: {
+                                    $regex: search,
+                                    $options: "i",
+                                },
+                            },
                         },
                     },
                 ];
@@ -91,6 +95,17 @@ class KitchenTicketRepository {
                 .sort({
                 ticketNumber: 1,
             });
+        }
+        catch (error) {
+            throw new Error(`Error fetching order tickets: ${error}`);
+        }
+    }
+    async getByTableID(tableId) {
+        try {
+            return await this.model
+                .find({ tableId })
+                .populate("tableId")
+                .sort({ ticketNumber: 1 });
         }
         catch (error) {
             throw new Error(`Error fetching order tickets: ${error}`);

@@ -16,12 +16,18 @@ const swagger_config_1 = require("./config/swagger.config");
 const module_1 = require("./module");
 const env_1 = __importDefault(require("./config/env"));
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)({
+const corsOptions = {
     origin: [
-        env_1.default.frontend_url || "https://thedineflow.vercel.app",
+        env_1.default.frontend_url || "https://atithi.cornortech.com",
+        "https://atithi.cornortech.com",
+        "https://www.atithi.cornortech.com",
+        "http://localhost:3000",
     ],
     credentials: true,
-}));
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));

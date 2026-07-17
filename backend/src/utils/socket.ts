@@ -7,7 +7,12 @@ let io: Server;
 export const initializeSocket = (server: http.Server) => {
   io = new Server(server, {
     cors: {
-      origin: [env.frontend_url || "http://localhost:3000"],
+      origin: [
+        env.frontend_url || "https://atithi.cornortech.com",
+        "https://atithi.cornortech.com",
+        "https://www.atithi.cornortech.com",
+        "http://localhost:3000",
+      ],
       credentials: true,
     },
     transports: ["websocket", "polling"],

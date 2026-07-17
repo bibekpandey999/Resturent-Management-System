@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.menuSubCategoryMutationHandler = exports.removeMenuSubCategory = exports.updateMenuSubCategory = exports.createMenuSubCategory = void 0;
 const menu_subcategory_repository_1 = __importDefault(require("../../repository/menu-subcategory.repository"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const socket_1 = require("../../utils/socket");
 const createMenuSubCategory = async ({ req }) => {
     try {
         const existing = await menu_subcategory_repository_1.default.getByName(req.body.name);
@@ -18,12 +19,19 @@ const createMenuSubCategory = async ({ req }) => {
                 },
             };
         }
-        await menu_subcategory_repository_1.default.create({
+        const data = await menu_subcategory_repository_1.default.create({
             ...req.body,
             categoryId: req.body.categoryId
                 ? new mongoose_1.default.Types.ObjectId(req.body.categoryId)
                 : undefined,
         });
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-subcategory:updated", data);
+        }
+        catch (err) {
+            console.error("Socket emit error in createMenuSubCategory:", err);
+        }
         return {
             status: 201,
             body: {
@@ -68,7 +76,14 @@ const updateMenuSubCategory = async ({ req }) => {
                 };
             }
         }
-        await menu_subcategory_repository_1.default.update(subCategoryID, req.body);
+        const updated = await menu_subcategory_repository_1.default.update(subCategoryID, req.body);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-subcategory:updated", updated);
+        }
+        catch (err) {
+            console.error("Socket emit error in updateMenuSubCategory:", err);
+        }
         return {
             status: 200,
             body: {
@@ -102,6 +117,13 @@ const removeMenuSubCategory = async ({ req }) => {
             };
         }
         await menu_subcategory_repository_1.default.delete(subCategoryID);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-subcategory:updated", { _id: subCategoryID, action: "delete" });
+        }
+        catch (err) {
+            console.error("Socket emit error in removeMenuSubCategory:", err);
+        }
         return {
             status: 200,
             body: {

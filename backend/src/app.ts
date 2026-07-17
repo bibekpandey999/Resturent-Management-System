@@ -15,7 +15,10 @@ const app = express();
 
 const corsOptions = {
   origin: [
-    env.frontend_url || "http://localhost:3000",
+    env.frontend_url || "https://atithi.cornortech.com",
+    "https://atithi.cornortech.com",
+    "https://www.atithi.cornortech.com",
+    "http://localhost:3000",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

@@ -17,8 +17,12 @@ const ingredient_contract_1 = require("./ingredient/ingredient.contract");
 const purchase_contract_1 = require("./purchase/purchase.contract");
 const stock_movement_contract_1 = require("./stock-movement/stock-movement.contract");
 const expenses_contract_1 = require("./expenses/expenses.contract");
+const auth_contract_1 = require("./auth/auth.contract");
+const log_contract_1 = require("./logs/log.contract");
+const report_contract_1 = require("./daily-report/report.contract");
 const c = (0, core_1.initContract)();
 exports.contract = c.router({
+    auth: auth_contract_1.authContract,
     user: user_contract_1.userContract,
     room: room_contract_1.roomContract,
     table: table_contract_1.tableContract,
@@ -34,4 +38,6 @@ exports.contract = c.router({
     purchase: purchase_contract_1.purchaseContract,
     stockMovement: stock_movement_contract_1.stockMovementContract,
     expenses: expenses_contract_1.expenseContract,
+    logs: log_contract_1.activityLogContract,
+    report: report_contract_1.reportContract,
 });

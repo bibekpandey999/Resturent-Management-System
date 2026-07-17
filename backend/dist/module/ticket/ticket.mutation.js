@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ticketMutationHandler = exports.removeTicket = exports.updateTicketStatus = void 0;
 const ticket_repository_1 = __importDefault(require("../../repository/ticket.repository"));
+const socket_1 = require("../../utils/socket");
 const updateTicketStatus = async ({ req }) => {
     try {
         const { ticketID } = req.params;
@@ -20,6 +21,13 @@ const updateTicketStatus = async ({ req }) => {
             };
         }
         const updated = await ticket_repository_1.default.updateStatus(ticketID, status);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("ticket:updated", updated);
+        }
+        catch (err) {
+            console.error("Socket emit error in updateTicketStatus:", err);
+        }
         return {
             status: 200,
             body: {
@@ -54,6 +62,13 @@ const removeTicket = async ({ req }) => {
             };
         }
         await ticket_repository_1.default.updateStatus(ticketID, "cancelled");
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("ticket:updated", { _id: ticketID, status: "cancelled" });
+        }
+        catch (err) {
+            console.error("Socket emit error in removeTicket:", err);
+        }
         return {
             status: 200,
             body: {

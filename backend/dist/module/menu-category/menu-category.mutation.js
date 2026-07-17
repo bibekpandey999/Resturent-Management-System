@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.menuCategoryMutationHandler = exports.removeMenuCategory = exports.updateMenuCategory = exports.createMenuCategory = void 0;
 const menu_category_repository_1 = __importDefault(require("../../repository/menu-category.repository"));
+const socket_1 = require("../../utils/socket");
 const createMenuCategory = async ({ req }) => {
     try {
         const existing = await menu_category_repository_1.default.getByName(req.body.name);
@@ -17,7 +18,14 @@ const createMenuCategory = async ({ req }) => {
                 },
             };
         }
-        await menu_category_repository_1.default.create(req.body);
+        const data = await menu_category_repository_1.default.create(req.body);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-category:updated", data);
+        }
+        catch (err) {
+            console.error("Socket emit error in createMenuCategory:", err);
+        }
         return {
             status: 201,
             body: {
@@ -62,7 +70,14 @@ const updateMenuCategory = async ({ req }) => {
                 };
             }
         }
-        await menu_category_repository_1.default.update(categoryID, req.body);
+        const updated = await menu_category_repository_1.default.update(categoryID, req.body);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-category:updated", updated);
+        }
+        catch (err) {
+            console.error("Socket emit error in updateMenuCategory:", err);
+        }
         return {
             status: 200,
             body: {
@@ -96,6 +111,13 @@ const removeMenuCategory = async ({ req }) => {
             };
         }
         await menu_category_repository_1.default.delete(categoryID);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-category:updated", { _id: categoryID, action: "delete" });
+        }
+        catch (err) {
+            console.error("Socket emit error in removeMenuCategory:", err);
+        }
         return {
             status: 200,
             body: {

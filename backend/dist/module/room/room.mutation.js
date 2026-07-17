@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.roomMutationHandler = exports.removeRoom = exports.updateRoom = exports.createRoom = void 0;
 const room_repository_1 = __importDefault(require("../../repository/room.repository"));
+const socket_1 = require("../../utils/socket");
 const createRoom = async ({ req }) => {
     try {
         const { name, description, isActive } = req.body;
@@ -18,11 +19,18 @@ const createRoom = async ({ req }) => {
                 },
             };
         }
-        await room_repository_1.default.create({
+        const data = await room_repository_1.default.create({
             name,
             description,
             isActive,
         });
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("room:updated", data);
+        }
+        catch (err) {
+            console.error("Socket emit error in createRoom:", err);
+        }
         return {
             status: 201,
             body: {
@@ -68,11 +76,18 @@ const updateRoom = async ({ req }) => {
                 };
             }
         }
-        await room_repository_1.default.update(roomID, {
+        const updated = await room_repository_1.default.update(roomID, {
             name,
             description,
             isActive,
         });
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("room:updated", updated);
+        }
+        catch (err) {
+            console.error("Socket emit error in updateRoom:", err);
+        }
         return {
             status: 200,
             body: {
@@ -106,6 +121,13 @@ const removeRoom = async ({ req }) => {
             };
         }
         await room_repository_1.default.delete(roomID);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("room:updated", { _id: roomID, action: "delete" });
+        }
+        catch (err) {
+            console.error("Socket emit error in removeRoom:", err);
+        }
         return {
             status: 200,
             body: {

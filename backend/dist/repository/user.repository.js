@@ -58,6 +58,15 @@ class UserRepository {
             throw new Error(`Error fetching user: ${error}`);
         }
     }
+    async getByRole(role, includePassword = false) {
+        try {
+            const query = this.model.find({ role });
+            return includePassword ? query.select("+password") : query;
+        }
+        catch (error) {
+            throw new Error(`Error fetching user: ${error}`);
+        }
+    }
     async update(id, data) {
         try {
             return await this.model.findByIdAndUpdate(id, data, { new: true });

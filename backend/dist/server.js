@@ -6,11 +6,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const db_config_1 = require("./config/db.config");
 const app_1 = __importDefault(require("./app"));
+const http_1 = __importDefault(require("http"));
+const socket_1 = require("./utils/socket");
+require("../src/config/nodeCorn");
 dotenv_1.default.config();
 const PORT = process.env.PORT || 4000;
 const startServer = async () => {
     await (0, db_config_1.connectDB)();
-    app_1.default.listen(PORT, () => {
+    const server = http_1.default.createServer(app_1.default);
+    (0, socket_1.initializeSocket)(server);
+    server.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
 };

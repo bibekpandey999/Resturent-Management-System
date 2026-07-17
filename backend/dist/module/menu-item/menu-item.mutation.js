@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.menuItemMutationHandler = exports.removeMenuItem = exports.updateMenuItem = exports.createMenuItem = void 0;
 const menu_item_repository_1 = __importDefault(require("../../repository/menu-item-repository"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const socket_1 = require("../../utils/socket");
 const createMenuItem = async ({ req }) => {
     try {
         const existing = await menu_item_repository_1.default.getByName(req.body.name);
@@ -24,7 +25,7 @@ const createMenuItem = async ({ req }) => {
         const files = req.files;
         console.log("IMAGE:", files?.image?.[0]);
         const profileUrl = files?.image?.[0]?.path || "";
-        await menu_item_repository_1.default.create({
+        const data = await menu_item_repository_1.default.create({
             ...req.body,
             categoryId: req.body.categoryId
                 ? new mongoose_1.default.Types.ObjectId(req.body.categoryId)
@@ -32,6 +33,13 @@ const createMenuItem = async ({ req }) => {
             image: profileUrl,
             price: amount,
         });
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-item:updated", data);
+        }
+        catch (err) {
+            console.error("Socket emit error in createMenuItem:", err);
+        }
         return {
             status: 201,
             body: {
@@ -79,7 +87,7 @@ const updateMenuItem = async ({ req }) => {
         const amount = Number(req.body.price);
         const files = req.files;
         const profileUrl = files?.image?.[0]?.path || "";
-        await menu_item_repository_1.default.update(itemID, {
+        const updated = await menu_item_repository_1.default.update(itemID, {
             ...req.body,
             categoryId: req.body.categoryId
                 ? new mongoose_1.default.Types.ObjectId(req.body.categoryId)
@@ -87,6 +95,13 @@ const updateMenuItem = async ({ req }) => {
             image: profileUrl,
             price: amount,
         });
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-item:updated", updated);
+        }
+        catch (err) {
+            console.error("Socket emit error in updateMenuItem:", err);
+        }
         return {
             status: 200,
             body: {
@@ -120,6 +135,13 @@ const removeMenuItem = async ({ req }) => {
             };
         }
         await menu_item_repository_1.default.delete(itemID);
+        try {
+            const io = (0, socket_1.getIO)();
+            io.emit("menu-item:updated", { _id: itemID, action: "delete" });
+        }
+        catch (err) {
+            console.error("Socket emit error in removeMenuItem:", err);
+        }
         return {
             status: 200,
             body: {

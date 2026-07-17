@@ -9,13 +9,11 @@ const mapTicket = (ticket) => {
     const order = ticket.orderId;
     const table = ticket.tableId;
     return {
-        // Ticket
         _id: ticket._id?.toString?.(),
         ticketNumber: ticket.ticketNumber,
         status: ticket.status,
         printed: ticket.printed,
         createdAt: ticket.createdAt,
-        // Order (populated)
         orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
         orderNumber: order?.orderNumber || null,
         customerName: order?.customerName || "Guest",
@@ -23,18 +21,17 @@ const mapTicket = (ticket) => {
             waiterId: order?.waiterId?._id?.toString?.() || order?.waiterId?.toString?.(),
             name: order?.waiterId?.name || null,
         },
-        // Table (populated)
         table: {
             tableId: table?._id?.toString?.() || ticket.tableId?.toString?.(),
             tableName: table?.name || null,
             capacity: table?.capacity || null,
             status: table?.status || null,
         },
-        // Items (kitchen view + finance usable)
         items: (ticket.items ?? []).map((i) => ({
             menuItemId: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
             name: i.name,
             quantity: i.quantity,
+            price: i.price,
         })),
     };
 };
@@ -70,10 +67,14 @@ exports.getTicketById = getTicketById;
 const getLiveTickets = async (req) => {
     try {
         const search = req.query.search;
+        const status = req.query.status;
+        if (status && status !== "all") {
+            req.query.status = status;
+        }
         const tickets = await ticket_repository_1.default.getAll({
             skip: 0,
             limit: 100,
-            status: "pending",
+            status: status || "pending",
             search,
         });
         return {
