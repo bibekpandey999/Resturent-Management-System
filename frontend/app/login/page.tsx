@@ -10,12 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { UserRole } from '@/lib/types';
 
-const demoAccounts: { email: string; role: UserRole; name: string }[] = [
-  { email: 'admin@gmail.com', role: 'admin', name: 'Admin' },
-  { email: 'waiter@gmail.com', role: 'waiter', name: 'Marcus Johnson' },
-  // { email: 'kitchen@gmail.com', role: 'kitchen', name: 'Chef Antonio' },
-  { email: 'cashier@gmail.com', role: 'cashier', name: 'Emily Rodriguez' },
-];
+// const demoAccounts: { email: string; role: UserRole; name: string }[] = [
+//   { email: 'admin@gmail.com', role: 'admin', name: 'Admin' },
+//   { email: 'waiter@gmail.com', role: 'waiter', name: 'Marcus Johnson' },
+//   // { email: 'kitchen@gmail.com', role: 'kitchen', name: 'Chef Antonio' },
+//   { email: 'cashier@gmail.com', role: 'cashier', name: 'Emily Rodriguez' },
+// ];
 
 function LoginForm() {
   const router = useRouter();
@@ -125,7 +125,7 @@ function LoginForm() {
         </Card>
 
         {/* Demo Accounts */}
-        <Card className="bg-card border-border">
+        {/* <Card className="bg-card border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-foreground">
               Quick Demo Access
@@ -149,12 +149,12 @@ function LoginForm() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
+        {/* <p className="text-center text-xs text-muted-foreground">
           Demo credentials: any email above + password: [admin@123, waiter@123, cashier@123]
-        </p>
+        </p> */}
       </div>
     </div>
   );
