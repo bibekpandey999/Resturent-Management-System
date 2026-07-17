@@ -16,7 +16,7 @@ import type { UserRole } from '@/lib/types';
 //   // { email: 'kitchen@gmail.com', role: 'kitchen', name: 'Chef Antonio' },
 //   { email: 'cashier@gmail.com', role: 'cashier', name: 'Emily Rodriguez' },
 // ];
-
+ 
 function LoginForm() {
   const router = useRouter();
   const { login, isLoading, user } = useAuth();
