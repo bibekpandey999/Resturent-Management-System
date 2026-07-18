@@ -7,10 +7,10 @@ export const tableStatusEnum = z.enum([
 ]);
 
 export const createTableSchema = z.object({
-  name: z.string().min(1),
-  capacity: z.number().min(1),
-  status: tableStatusEnum.optional(),
-  sectionId: z.string().optional(),
+  name: z.string().min(1, "Name is required"),
+sectionId: z.string().optional(),
+  capacity: z.number(),
+  status: z.string().optional(),
 });
 
 export const tableSchema = z.object({

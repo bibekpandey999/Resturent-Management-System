@@ -3,7 +3,13 @@ import { UsePaginationParams } from "../types/usePagination";
 import { TCreateTableSchema, TDeleteTableSchema, TGetTableByIdSchema } from "../validations/table.validation";
 
 export const createTable = async (data: TCreateTableSchema) => {
-  const res = await apiClient.post("/table", data);
+  const payload: Omit<TCreateTableSchema, "sectionId"> & { sectionId?: string } = { ...data };
+
+  if (!payload.sectionId) {
+    payload.sectionId = undefined;
+  }
+
+  const res = await apiClient.post("/table", payload);
   return res.data;
 };
 

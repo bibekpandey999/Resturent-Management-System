@@ -56,12 +56,12 @@ export default function TablesPage() {
     reset,
   } = useForm({
     resolver: zodResolver(createTableSchema),
-    defaultValues: {
-      name: "",
-      sectionId: "",
-      capacity: 2,
-      status: undefined,
-    },
+  defaultValues: {
+  name: "",
+  sectionId: "",
+  capacity: 2,
+  status: undefined,
+},
   });
 
   const { mutate: deleteTable } = useDeleteTable();
