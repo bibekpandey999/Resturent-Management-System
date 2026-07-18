@@ -181,12 +181,12 @@ export default function UsersPage() {
     
     {/* Refresh Button - Always visible */}
     <Button
-  variant="outline"
-  className="rounded-lg border-blue-500 text-blue-600 hover:bg-blue-50"
-  onClick={() => window.location.reload()}
->
-  Refresh
-</Button>
+      variant="outline"
+      className="rounded-lg border-gray-300"
+      onClick={() => window.location.reload()}
+    >
+      Refresh
+    </Button>
 
     {/* Add User Button - Only visible when form is hidden */}
     {!formVisible && (
