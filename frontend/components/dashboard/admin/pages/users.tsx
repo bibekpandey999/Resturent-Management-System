@@ -175,22 +175,33 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardHeader
-        title="User Management"
-        description="Manage access, role assignments and employee details."
-      ></DashboardHeader>
+  <DashboardHeader
+    title="User Management"
+    description="Manage access, role assignments and employee details."
+  />
 
-      {!formVisible && (
-        <div className="flex items-center justify-end">
-          <Button
-            variant="default"
-            className="bg-yellow-400 rounded-lg"
-            onClick={() => setFormVisible(true)}
-          >
-            Add User
-          </Button>
-        </div>
-      )}
+  {!formVisible && (
+    <div className="flex items-center justify-end gap-2">
+      {/* Refresh Button */}
+      <Button
+        variant="outline"
+        className="rounded-lg"
+        onClick={() => window.location.reload()}
+      >
+        Refresh
+      </Button>
+
+      {/* Add User Button */}
+      <Button
+        variant="default"
+        className="bg-yellow-400 rounded-lg"
+        onClick={() => setFormVisible(true)}
+      >
+        Add User
+      </Button>
+    </div>
+  )}
+</div>
 
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
