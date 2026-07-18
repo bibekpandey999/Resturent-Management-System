@@ -168,6 +168,8 @@ export default function TablesPage() {
         title="Table Floorplan"
         description="Monitor seating availability and layout status."
       />
+
+      <div className="flex items-center justify-end gap-2">
       
        <Button
       variant="outline"
@@ -188,6 +190,9 @@ export default function TablesPage() {
           </Button>
         </div>
       )}
+      </div>
+
+      
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <PageSection title="Add Table">
