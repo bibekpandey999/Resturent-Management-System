@@ -23,7 +23,6 @@ const createTable = async ({ req }) => {
 
         const payload = { ...req.body };
 
-        // Only set sectionId if it's a valid, non-empty value
         if (req.body.sectionId && mongoose_1.default.Types.ObjectId.isValid(req.body.sectionId)) {
             payload.sectionId = new mongoose_1.default.Types.ObjectId(req.body.sectionId);
         } else {
@@ -56,7 +55,6 @@ const createTable = async ({ req }) => {
         };
     }
 };
-
 
 exports.createTable = createTable;
 const updateTable = async ({ req }) => {
