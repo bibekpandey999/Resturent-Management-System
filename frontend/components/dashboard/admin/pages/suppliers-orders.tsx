@@ -127,6 +127,8 @@ export default function PurchaseOrdersPage() {
         description="Manage supplier purchases and stock intake."
       />
 
+            <div className="flex items-center justify-end gap-2">
+
        <Button
             variant="outline"
             className="rounded-lg border-gray-300"
@@ -140,6 +142,7 @@ export default function PurchaseOrdersPage() {
           <Button onClick={() => setShowForm(true)}>Create Purchase</Button>
         </div>
       )}
+      </div>
 
       {showForm && (
         <form onSubmit={handleSubmit(onSubmit)}>

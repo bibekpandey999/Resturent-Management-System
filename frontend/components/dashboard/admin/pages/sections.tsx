@@ -149,6 +149,9 @@ export default function SectionsPage() {
         description="Organize seating sections and monitor section capacity."
       />
 
+ <div className="flex items-center justify-end gap-2">
+
+
       <Button
       variant="outline"
       className="rounded-lg border-gray-300"
@@ -168,6 +171,10 @@ export default function SectionsPage() {
           </Button>
         </div>
       )}
+
+       </div>
+
+       
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <PageSection title="Create Section">

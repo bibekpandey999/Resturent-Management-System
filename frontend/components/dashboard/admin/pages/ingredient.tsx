@@ -205,6 +205,8 @@ export default function InventoryPage() {
         description="Track ingredient stock levels and reorder thresholds."
       />
 
+           <div className="flex items-center justify-end gap-2">
+
       <Button
       variant="outline"
       className="rounded-lg border-gray-300"
@@ -224,6 +226,9 @@ export default function InventoryPage() {
           </Button>
         </div>
       )}
+
+</div>
+
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <PageSection title="Add Ingredient">

@@ -155,6 +155,8 @@ export default function MenuCategoriesPage() {
         description="Manage category structure for the ordering menu."
       />
 
+       <div className="flex items-center justify-end gap-2">
+
       <Button
       variant="outline"
       className="rounded-lg border-gray-300"
@@ -174,6 +176,7 @@ export default function MenuCategoriesPage() {
           </Button>
         </div>
       )}
+      </div>
 
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>

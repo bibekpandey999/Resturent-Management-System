@@ -203,6 +203,8 @@ export default function MenuItemsPage() {
         description="Review menu items, availability, and pricing."
       />
 
+           <div className="flex items-center justify-end gap-2">
+
       <Button
       variant="outline"
       className="rounded-lg border-gray-300"
@@ -222,6 +224,10 @@ export default function MenuItemsPage() {
           </Button>
         </div>
       )}
+
+      </div>
+
+      
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <PageSection title="Add Menu Item">

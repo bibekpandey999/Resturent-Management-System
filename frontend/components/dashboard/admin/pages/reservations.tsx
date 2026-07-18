@@ -195,6 +195,8 @@ export default function ReservationsPage() {
         description="Track upcoming guests, booking details, and table assignments."
       />
 
+ <div className="flex items-center justify-end gap-2">
+      
        <Button
             variant="outline"
             className="rounded-lg border-gray-300"
@@ -214,6 +216,9 @@ export default function ReservationsPage() {
           </Button>
         </div>
       )}
+
+      </div>
+      
       {formVisible && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <PageSection title="New Reservation">
