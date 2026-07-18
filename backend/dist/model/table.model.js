@@ -17,7 +17,6 @@ const tableSchema = new mongoose_1.default.Schema({
     },
     status: {
         type: String,
-        required: true,
         enum: ["available", "occupied", "reserved", "cleaning", "out-of-service"],
         default: "available",
     },
