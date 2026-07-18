@@ -9,7 +9,8 @@ interface ActivityFeedProps {
   description?: string;
 }
 
-function getInitials(name: string): string {
+function getInitials(name?: string): string {
+  if (!name) return "?";
   return name
     .split(' ')
     .map(n => n[0])
@@ -49,7 +50,7 @@ export function ActivityFeed({
               <div key={activity.id} className="flex items-start gap-3">
                 <Avatar className="size-8">
                   <AvatarFallback className={getActionColor(activity.action)}>
-                    {getInitials(activity.user.name)}
+                 {getInitials(activity.user?.name ?? "Unknown")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
