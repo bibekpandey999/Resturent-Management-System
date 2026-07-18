@@ -185,7 +185,7 @@ export default function TablesPage() {
           <PageSection title="Add Table">
             <div className="grid gap-4 lg:grid-cols-4">
               <div>
-                <Label htmlFor="new-table-name">Table name</Label>
+                <Label htmlFor="new-table-name">Table Name</Label>
                 <Input
                   id="new-table-name"
                   {...register("name")}
@@ -197,10 +197,6 @@ export default function TablesPage() {
                   </p>
                 )}
               </div>
-               
-              
-              
-              
               
               <div>
                 <Label htmlFor="new-table-capacity">Capacity</Label>
