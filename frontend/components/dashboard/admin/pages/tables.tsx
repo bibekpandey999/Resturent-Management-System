@@ -199,18 +199,7 @@ export default function TablesPage() {
               </div>
               <div>
                 <Label htmlFor="new-table-section">Section</Label>
-                <select
-                  id="new-table-section"
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  {...register("sectionId")}
-                >
-                  <option value="">-- Choose Rooms --</option>
-                  {rooms.map((room: TRoom) => (
-                    <option key={room._id} value={room._id}>
-                      {room.name}
-                    </option>
-                  ))}
-                </select>
+          
                 {errors.sectionId && (
                   <p className="text-red-500 text-[12px] mt-1">
                     {errors.sectionId.message}
