@@ -197,6 +197,10 @@ export default function TablesPage() {
                   </p>
                 )}
               </div>
+               
+              
+              
+              
               
               <div>
                 <Label htmlFor="new-table-capacity">Capacity</Label>
