@@ -10,26 +10,25 @@ const ticket_repository_1 = __importDefault(require("../../repository/ticket.rep
 const socket_1 = require("../../utils/socket");
 const createTable = async ({ req }) => {
     try {
-        const { sectionId } = req.body;
+        const { sectionId, name } = req.body;
+
+        console.log("Incoming createTable body:", req.body); // TEMP DEBUG
 
         if (!sectionId || !mongoose_1.default.Types.ObjectId.isValid(sectionId)) {
             return {
                 status: 400,
                 body: {
                     success: false,
-                    error: "Valid sectionId is required",
+                    error: "Valid sectionId is required, received: " + sectionId,
                 },
             };
         }
 
-        const existing = await table_repository_1.default.getByName(req.body.name);
+        const existing = await table_repository_1.default.getByName(name);
         if (existing) {
             return {
                 status: 400,
-                body: {
-                    success: false,
-                    error: "Table name already exists",
-                },
+                body: { success: false, error: "Table name already exists" },
             };
         }
 
@@ -47,18 +46,13 @@ const createTable = async ({ req }) => {
 
         return {
             status: 201,
-            body: {
-                success: true,
-                message: "Table created successfully",
-            },
+            body: { success: true, message: "Table created successfully" },
         };
     } catch (error) {
+        console.error("createTable error:", error); // TEMP DEBUG
         return {
             status: 500,
-            body: {
-                success: false,
-                error: error.message,
-            },
+            body: { success: false, error: error.message },
         };
     }
 };
