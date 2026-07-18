@@ -10,6 +10,19 @@ const ticket_repository_1 = __importDefault(require("../../repository/ticket.rep
 const socket_1 = require("../../utils/socket");
 const createTable = async ({ req }) => {
     try {
+        const { sectionId } = req.body;
+
+        // ✅ Validate sectionId first
+        if (!sectionId || !mongoose_1.default.Types.ObjectId.isValid(sectionId)) {
+            return {
+                status: 400,
+                body: {
+                    success: false,
+                    error: "Valid sectionId is required",
+                },
+            };
+        }
+
         const existing = await table_repository_1.default.getByName(req.body.name);
         if (existing) {
             return {
@@ -20,17 +33,19 @@ const createTable = async ({ req }) => {
                 },
             };
         }
+
         const data = await table_repository_1.default.create({
             ...req.body,
-            sectionId: new mongoose_1.default.Types.ObjectId(req.body.sectionId),
+            sectionId: new mongoose_1.default.Types.ObjectId(sectionId),
         });
+
         try {
             const io = (0, socket_1.getIO)();
             io.emit("table:updated", data);
-        }
-        catch (err) {
+        } catch (err) {
             console.error("Socket emit error in createTable:", err);
         }
+
         return {
             status: 201,
             body: {
@@ -38,8 +53,7 @@ const createTable = async ({ req }) => {
                 message: "Table created successfully",
             },
         };
-    }
-    catch (error) {
+    } catch (error) {
         return {
             status: 500,
             body: {
@@ -49,6 +63,8 @@ const createTable = async ({ req }) => {
         };
     }
 };
+
+
 exports.createTable = createTable;
 const updateTable = async ({ req }) => {
     try {
