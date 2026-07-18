@@ -197,15 +197,7 @@ export default function TablesPage() {
                   </p>
                 )}
               </div>
-              <div>
-                <Label htmlFor="new-table-section">Section</Label>
-          
-                {errors.sectionId && (
-                  <p className="text-red-500 text-[12px] mt-1">
-                    {errors.sectionId.message}
-                  </p>
-                )}
-              </div>
+              
               <div>
                 <Label htmlFor="new-table-capacity">Capacity</Label>
                 <Input
