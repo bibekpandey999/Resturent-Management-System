@@ -12,8 +12,7 @@ const createTable = async ({ req }) => {
     try {
         const { sectionId } = req.body;
 
-        // ✅ Validate sectionId first
-        if  (!sectionId || !mongoose_1.default.Types.ObjectId.isValid(sectionId)) {
+        if (!sectionId || !mongoose_1.default.Types.ObjectId.isValid(sectionId)) {
             return {
                 status: 400,
                 body: {
