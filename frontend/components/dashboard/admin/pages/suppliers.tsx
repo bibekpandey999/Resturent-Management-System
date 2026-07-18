@@ -183,6 +183,15 @@ export default function SuppliersPage() {
         title="Supplier Directory"
         description="Keep supplier contacts and purchasing partners organized."
       />
+
+        <Button
+      variant="outline"
+      className="rounded-lg border-gray-300"
+      onClick={() => window.location.reload()}
+    >
+      Refresh
+    </Button>
+
       {!formVisible && (
         <div className="flex items-center justify-end">
           <Button

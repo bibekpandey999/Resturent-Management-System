@@ -127,6 +127,14 @@ export default function PurchaseOrdersPage() {
         description="Manage supplier purchases and stock intake."
       />
 
+       <Button
+            variant="outline"
+            className="rounded-lg border-gray-300"
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </Button>
+
       {!showForm && (
         <div className="flex justify-end">
           <Button onClick={() => setShowForm(true)}>Create Purchase</Button>

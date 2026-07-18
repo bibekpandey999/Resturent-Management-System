@@ -149,6 +149,14 @@ export default function SectionsPage() {
         description="Organize seating sections and monitor section capacity."
       />
 
+      <Button
+      variant="outline"
+      className="rounded-lg border-gray-300"
+      onClick={() => window.location.reload()}
+    >
+      Refresh
+    </Button>
+
       {!formVisible && (
         <div className="flex items-center justify-end">
           <Button

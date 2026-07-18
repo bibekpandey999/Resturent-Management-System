@@ -195,6 +195,14 @@ export default function ReservationsPage() {
         description="Track upcoming guests, booking details, and table assignments."
       />
 
+       <Button
+            variant="outline"
+            className="rounded-lg border-gray-300"
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </Button>
+
       {!formVisible && (
         <div className="flex items-center justify-end">
           <Button

@@ -178,6 +178,14 @@ export default function FinanceExpensesPage() {
         description="Track costs and spending categories across operations."
       />
 
+      <Button
+            variant="outline"
+            className="rounded-lg border-gray-300"
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </Button>
+
       {/* METRICS */}
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard title="Total expenses" value={`Rs ${total.toFixed(2)}`} />

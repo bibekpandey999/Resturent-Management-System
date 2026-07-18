@@ -168,6 +168,14 @@ export default function TablesPage() {
         title="Table Floorplan"
         description="Monitor seating availability and layout status."
       />
+      
+       <Button
+      variant="outline"
+      className="rounded-lg border-gray-300"
+      onClick={() => window.location.reload()}
+    >
+      Refresh
+    </Button>
 
       {!formVisible && (
         <div className="flex items-center justify-end">
