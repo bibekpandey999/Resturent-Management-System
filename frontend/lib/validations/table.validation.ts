@@ -30,7 +30,7 @@ export const updateTableSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   capacity: z.number().min(1).optional(),
   status: z.enum(["available", "occupied", "reserved"]).optional(),
-  sectionId: z.string(),
+  sectionId: z.string().optional(),
 });
 
 export type TUpdateTableSchema = z.infer<typeof updateTableSchema>;

@@ -68,11 +68,11 @@ export default function TableEditForm({
   const { mutate, isPending } = useMutation({
     mutationFn: ({
       tableId,
-      formData,
+      payload,
     }: {
       tableId: string;
-      formData: FormData;
-    }) => tableApi.updateTableApi(tableId, formData),
+      payload: Record<string, any>;
+    }) => tableApi.updateTableApi(tableId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast({
@@ -95,13 +95,15 @@ export default function TableEditForm({
   });
 
   const onSubmit = (data: TUpdateTableSchema) => {
-    const formData = new FormData();
-    formData.append("name", data.name || "");
-    formData.append("sectionId", data.sectionId || "");
-    formData.append("capacity", String(data.capacity || 1));
-    formData.append("status", data.status || "available");
-
-    mutate({ tableId, formData });
+    mutate({
+      tableId,
+      payload: {
+        name: data.name,
+        sectionId: data.sectionId || undefined,
+        capacity: data.capacity,
+        status: data.status,
+      },
+    });
   };
 
   if (!table) return null;

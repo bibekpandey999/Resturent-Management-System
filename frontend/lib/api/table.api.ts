@@ -25,8 +25,8 @@ const getTableByIdApi = async (TableId: TGetTableByIdSchema["_id"]) => {
   return response.data;
 };
 
-const updateTableApi = async (TableId: string, formData: FormData) => {
-  const response = await apiClient.put(`/table/${TableId}`, formData, {});
+const updateTableApi = async (TableId: string, data: Record<string, any>) => {
+  const response = await apiClient.put(`/table/${TableId}`, data);
   return response.data;
 };
 
