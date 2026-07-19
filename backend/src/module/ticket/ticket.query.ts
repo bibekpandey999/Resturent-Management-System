@@ -74,7 +74,7 @@ export const getTicketById: AppRouteQueryImplementation<
 
 export const getLiveTickets: AppRouteQueryImplementation<
   typeof ticketContract.getLiveTickets
-> = async (req) => {
+> = async ({ req }) => {
   try {
     const search = req.query.search as string | undefined;
 

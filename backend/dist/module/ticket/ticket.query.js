@@ -64,7 +64,7 @@ const getTicketById = async ({ req }) => {
     }
 };
 exports.getTicketById = getTicketById;
-const getLiveTickets = async (req) => {
+const getLiveTickets = async ({ req }) => {
     try {
         const search = req.query.search;
         const status = req.query.status;
