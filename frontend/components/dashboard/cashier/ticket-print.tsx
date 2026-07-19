@@ -41,16 +41,15 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
 
         {/* Table / Waiter Info */}
         <div className="py-2 border-b border-gray-200">
-          <div className="flex justify-between">
-            <span>Table</span>
-            <span>{order.table?.tableName || "-"}</span>
-          </div>
+          
 
           <div className="flex justify-between">
             <span>Customer</span>
             <span>{order.order?.customerName || "Guest"}</span>
           </div>
 
+         
+        </div>
 
         {/* Items Header */}
         <div className="py-2">
@@ -74,7 +73,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
           <p className="font-semibold">Visit again</p>
 
           <div className="border-t border-gray-200 mt-2 pt-2 text-[9px]">
-            Powered by DineFlow
+            Powered by Atithi RMS By Cornor Tech Pvt. Ltd.
           </div>
         </div>
       </div>
