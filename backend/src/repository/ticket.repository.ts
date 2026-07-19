@@ -30,10 +30,11 @@ class KitchenTicketRepository {
 
       const query: any = {};
 
-      if (status && status !== "all") {
-        query.status = status;
-      }
-      
+if (status && status !== "all") {
+  query.status = status;
+} else {
+  query.status = { $ne: "completed" };
+}
       if (search) {
         query.$or = [
           {

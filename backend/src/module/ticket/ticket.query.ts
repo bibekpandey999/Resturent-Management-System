@@ -89,11 +89,11 @@ export const getLiveTickets: AppRouteQueryImplementation<
     }
 
     const tickets = await kitchenTicketRepository.getAll({
-      skip: 0,
-      limit: 100,
-      status: status || "pending",
-      search,
-    });
+  skip: 0,
+  limit: 100,
+  status: status && status !== "all" ? status : undefined,
+  search,
+});
 
     return {
       status: 200,
