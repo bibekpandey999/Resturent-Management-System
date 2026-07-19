@@ -3,7 +3,7 @@ import kitchenTicketRepository from "../../repository/ticket.repository";
 import { ticketContract } from "../../contract/ticket/ticket.contract";
 import { getIO } from "../../utils/socket";
 
-export const updateTicketStatus: AppRouteMutationImplementation
+export const updateTicketStatus: AppRouteMutationImplementation<
   typeof ticketContract.updateTicketStatus
 > = async ({ req }) => {
   try {
@@ -53,7 +53,7 @@ export const updateTicketStatus: AppRouteMutationImplementation
   }
 };
 
-export const updateTicketDiscount: AppRouteMutationImplementation
+export const updateTicketDiscount: AppRouteMutationImplementation<
   typeof ticketContract.updateTicketDiscount
 > = async ({ req }) => {
   try {
@@ -102,7 +102,7 @@ export const updateTicketDiscount: AppRouteMutationImplementation
   }
 };
  
-export const removeTicket: AppRouteMutationImplementation
+export const removeTicket: AppRouteMutationImplementation<
   typeof ticketContract.removeTicket
 > = async ({ req }) => {
   try {
