@@ -101,7 +101,7 @@ export const updateTicketDiscount: AppRouteMutationImplementation
     };
   }
 };
-
+ 
 export const removeTicket: AppRouteMutationImplementation
   typeof ticketContract.removeTicket
 > = async ({ req }) => {
