@@ -153,6 +153,7 @@
     min-width: 44px;
   }
 }
+
 @media print {
   @page {
     size: 80mm auto;
@@ -161,11 +162,13 @@
 
   html, body {
     width: 80mm !important;
-    height: auto !important;
+    height: fit-content !important;
     min-height: 0 !important;
+    max-height: none !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+    overflow: visible !important;
   }
 
   body * {
@@ -181,7 +184,7 @@
     position: static !important;
     width: 80mm !important;
     max-width: 80mm !important;
-    height: auto !important;
+    height: fit-content !important;
     margin: 0 !important;
     padding: 2mm !important;
     border: none !important;
