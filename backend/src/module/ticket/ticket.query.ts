@@ -71,7 +71,7 @@ export const getTicketById: AppRouteQueryImplementation<
     };
   }
 };
-
+console.log("HIT getLiveTickets handler");
 export const getLiveTickets: AppRouteQueryImplementation<
   typeof ticketContract.getLiveTickets
 > = async ({ req }) => {
