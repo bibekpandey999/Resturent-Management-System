@@ -24,7 +24,7 @@ export default function PrintInvoice({ order }: any) {
             <span>Estd: 2068/2/21</span>
             <span>PAN: 123S34Ft-V21</span>
           </div>
-          <h1 className="text-xl font-bold tracking-wider">Local Vibes</h1>
+          <h1 className="text-xl font-bold tracking-wider">Local Vibes Cafe & Bar</h1>
           <p className="text-[10px] text-gray-600">
             Butwal 10, Kalikanagar
           </p>
