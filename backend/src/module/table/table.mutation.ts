@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 
 import { tableContract } from "../../contract/table/table.contract";
 import tableRepository from "../../repository/table.repository";
-import ticketRepository from "../../repository/ticket.repository";
 import { getIO } from "../../utils/socket";
 
 export const createTable: AppRouteMutationImplementation<
@@ -132,23 +131,6 @@ export const updateTableStatus: AppRouteMutationImplementation<
         body: {
           success: false,
           error: "Table not found",
-        },
-      };
-    }
-
-    const tickets = await ticketRepository.getByTableID(tableID);
-
-    const hasUnservedTickets = tickets.some(
-      (ticket) => ticket.status !== "served",
-    );
-
-    if (hasUnservedTickets) {
-      return {
-        status: 400,
-        body: {
-          success: false,
-          error:
-            "Cannot change table status while there are pending kitchen tickets.",
         },
       };
     }
