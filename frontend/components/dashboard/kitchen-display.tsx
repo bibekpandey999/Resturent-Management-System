@@ -55,9 +55,9 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
   const { timeRemaining, isOvertime } = useOrderTimer(order.createdAt);
   
   // Filter items that need kitchen attention (not drinks/beverages)
-  const kitchenItems = order.items.filter(
-    item => !item.menuItem.categoryId.includes('cat-5') // Exclude beverages
-  );
+ const kitchenItems = order.items.filter(
+  item => !item.menuItem?.categoryId?.includes('cat-5')
+);
   
   const allItemsCooked = kitchenItems.every(item => item.status === 'ready' || item.status === 'served');
   const isPriority = parseInt(timeAgo) > 20; // More than 20 minutes

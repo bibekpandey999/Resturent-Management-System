@@ -28,7 +28,10 @@ const mapTicket = (ticket) => {
             status: table?.status || null,
         },
         items: (ticket.items ?? []).map((i) => ({
-            menuItemId: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
+            menuItem: {
+  _id: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
+  categoryId: i.menuItemId?.categoryId?.toString?.() || "",
+},
             name: i.name,
             quantity: i.quantity,
             price: i.price,
