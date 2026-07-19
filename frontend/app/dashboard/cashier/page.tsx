@@ -74,9 +74,26 @@ export default function CashierDashboard() {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const handlePrintInvoice = useReactToPrint({
-    contentRef: invoiceRef,
-    documentTitle: selectedTicket?.orderNumber || "invoice",
-  });
+  contentRef: invoiceRef,
+  documentTitle: selectedTicket?.orderNumber || "invoice",
+  pageStyle: `
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+    html, body {
+      width: 80mm !important;
+      height: fit-content !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  `,
+});
 
   return (
     <div className="space-y-6 print:bg-white">
