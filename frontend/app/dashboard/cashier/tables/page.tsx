@@ -54,8 +54,20 @@ export default function CashierTablesPage() {
     return matchesStatus && matchesQuery;
   });
 
-  const { mutate: markServed, isPending } = useUpdateTableStatus();
+const { mutate: markServed, isPending } = useUpdateTableStatus();
 
+
+
+const handleStatusChange = (value: TableStatus) => {
+  if (!selectedTable) return;
+  const prevStatus = selectedTable.status;
+  setSelectedTable({ ...selectedTable, status: value });
+  markServed(
+    { tableId: selectedTable._id, status: value },
+    { onError: () => setSelectedTable({ ...selectedTable, status: prevStatus }) }
+  );
+};
+  
   return (
     <div className="space-y-6 mb-12">
       <DashboardHeader
@@ -220,24 +232,19 @@ export default function CashierTablesPage() {
       Change table status
     </label>
     <Select
-      value={selectedTable.status}
-      onValueChange={(value) =>
-        markServed({
-          tableId: selectedTable?._id || "",
-          status: value as TableStatus,
-        })
-      }
-      disabled={isPending}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Choose a status" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="available">Available</SelectItem>
-        <SelectItem value="occupied">Occupied</SelectItem>
-        <SelectItem value="reserved">Reserved</SelectItem>
-      </SelectContent>
-    </Select>
+  value={selectedTable.status}
+  onValueChange={handleStatusChange}
+  disabled={isPending}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Choose a status" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="available">Available</SelectItem>
+    <SelectItem value="occupied">Occupied</SelectItem>
+    <SelectItem value="reserved">Reserved</SelectItem>
+  </SelectContent>
+</Select>
   </CardContent>
 </Card>
 
