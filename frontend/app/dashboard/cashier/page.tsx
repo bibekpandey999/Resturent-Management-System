@@ -246,15 +246,21 @@ export default function CashierDashboard() {
                     <h4 className="font-semibold">Items</h4>
                     <div className="space-y-2 mt-2">
                       {selectedTicket.items?.map((it: any) => (
-                        <div
-                          key={it.menuItemId}
-                          className="flex justify-between"
-                        >
-                          <div>
-                            {it.name} × {it.quantity}
-                          </div>
-                        </div>
-                      ))}
+  <div
+    key={it.menuItemId}
+    className="flex justify-between"
+  >
+    <div className="flex flex-col">
+      <span>{it.name} × {it.quantity}</span>
+      <span className="text-xs text-muted-foreground">
+        Rs {it.price?.toFixed(2) ?? "0.00"} each
+      </span>
+    </div>
+    <span className="font-medium">
+      Rs {((it.price ?? 0) * (it.quantity ?? 0)).toFixed(2)}
+    </span>
+  </div>
+))}
                     </div>
                   </div>
                 </div>
