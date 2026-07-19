@@ -1,5 +1,5 @@
 "use client";
-
+import { useToast } from "@/components/ui/use-toast";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
@@ -32,7 +32,7 @@ export default function CashierTablesPage() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TableStatus | "all">("all");
   const [selectedTable, setSelectedTable] = useState<TTable | null>(null);
-
+  const { toast } = useToast(); 
   const { data: tableData } = useAllTables({
     search: query,
   });
@@ -64,7 +64,18 @@ const handleStatusChange = (value: TableStatus) => {
   setSelectedTable({ ...selectedTable, status: value });
   markServed(
     { tableId: selectedTable._id, status: value },
-    { onError: () => setSelectedTable({ ...selectedTable, status: prevStatus }) }
+    {
+      onError: (error: any) => {
+        setSelectedTable({ ...selectedTable, status: prevStatus });
+        toast({
+          variant: "destructive",
+          title: "Unable to change table status",
+          description:
+            error?.response?.data?.error ||
+            "This table has pending kitchen tickets.",
+        });
+      },
+    }
   );
 };
   
