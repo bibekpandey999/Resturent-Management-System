@@ -62,21 +62,29 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
         </div>
 
         {/* Items Header */}
-        <div className="py-2">
-          <div className="grid grid-cols-12 bg-gray-200 text-gray-950 p-1">
-            <span className="col-span-8">Item</span>
-            <span className="col-span-4 text-right">Qty</span>
-          </div>
+       <div className="py-2">
+  <div className="grid grid-cols-12 bg-gray-200 text-gray-950 p-1">
+    <span className="col-span-5">Item</span>
+    <span className="col-span-2 text-right">Rate</span>
+    <span className="col-span-2 text-right">Qty</span>
+    <span className="col-span-3 text-right">Amt</span>
+  </div>
 
-          {order.items?.map((item: any, idx: number) => (
-            <div key={idx} className="grid grid-cols-12 py-1">
-              <span className="col-span-8 truncate">{item.name}</span>
-              <span className="col-span-4 text-right font-bold">
-                x{item.quantity}
-              </span>
-            </div>
-          ))}
-        </div>
+  {order.items?.map((item: any, idx: number) => (
+    <div key={idx} className="grid grid-cols-12 py-1">
+      <span className="col-span-5 truncate">{item.name}</span>
+      <span className="col-span-2 text-right">
+        {(item.price ?? 0).toFixed(2)}
+      </span>
+      <span className="col-span-2 text-right">
+        x{item.quantity}
+      </span>
+      <span className="col-span-3 text-right font-bold">
+        {((item.price ?? 0) * (item.quantity ?? 0)).toFixed(2)}
+      </span>
+    </div>
+  ))}
+</div>
 
         {/* Totals */}
         <div className="border-t border-b border-gray-200 py-2 mt-1">
