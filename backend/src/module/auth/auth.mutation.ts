@@ -76,11 +76,11 @@ export const login: AppRouteMutationImplementation<
     });
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 8 * 60 * 60 * 1000,
-    });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 8 * 60 * 60 * 1000,
+});
 
     await logRepository.create({
       userId: new mongoose.Types.ObjectId(userId),
@@ -137,10 +137,10 @@ export const logout: AppRouteMutationImplementation<
   }
 
   res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+});
 
   await logRepository.create({
     userId: new mongoose.Types.ObjectId(userId),
