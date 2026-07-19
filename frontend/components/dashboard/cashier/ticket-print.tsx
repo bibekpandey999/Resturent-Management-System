@@ -18,7 +18,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
         {/* Header */}
         <div className="text-center border-b border-gray-200 pb-2">
           <div className="flex items-center justify-between text-[10px]">
-            <span>PAN: 123S34Ft-V21</span>
+            <span>Phone Number : 9747384486</span>
           </div>
           <h1 className="text-xl font-bold tracking-wider">Local Vibes Cafe & Bar</h1>
           <p className="text-[10px] text-gray-600">Butwal 10, Kalikanagar</p>
