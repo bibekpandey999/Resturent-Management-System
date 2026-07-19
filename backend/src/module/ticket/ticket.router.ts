@@ -9,6 +9,7 @@ const s = initServer();
 export const ticketRouter = s.router(ticketContract, {
   updateTicketStatus: ticketMutationHandler.updateTicketStatus,
   removeTicket: ticketMutationHandler.removeTicket,
+  updateTicketDiscount: ticketMutationHandler.updateTicketDiscount,
 
   getTicketByID: ticketQueryHandler.getTicketById,
   getLiveTickets: ticketQueryHandler.getLiveTickets,

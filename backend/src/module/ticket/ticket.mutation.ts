@@ -3,7 +3,7 @@ import kitchenTicketRepository from "../../repository/ticket.repository";
 import { ticketContract } from "../../contract/ticket/ticket.contract";
 import { getIO } from "../../utils/socket";
 
-export const updateTicketStatus: AppRouteMutationImplementation<
+export const updateTicketStatus: AppRouteMutationImplementation
   typeof ticketContract.updateTicketStatus
 > = async ({ req }) => {
   try {
@@ -53,7 +53,56 @@ export const updateTicketStatus: AppRouteMutationImplementation<
   }
 };
 
-export const removeTicket: AppRouteMutationImplementation<
+export const updateTicketDiscount: AppRouteMutationImplementation
+  typeof ticketContract.updateTicketDiscount
+> = async ({ req }) => {
+  try {
+    const { ticketID } = req.params;
+    const { discount } = req.body;
+
+    const ticket = await kitchenTicketRepository.getByID(ticketID);
+
+    if (!ticket) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          error: "Ticket not found",
+        },
+      };
+    }
+
+    const updated = await kitchenTicketRepository.update(ticketID, {
+      discount,
+    });
+
+    try {
+      const io = getIO();
+      io.emit("ticket:updated", updated);
+    } catch (err) {
+      console.error("Socket emit error in updateTicketDiscount:", err);
+    }
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: "Discount updated",
+        data: updated,
+      },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        success: false,
+        error: (error as Error).message,
+      },
+    };
+  }
+};
+
+export const removeTicket: AppRouteMutationImplementation
   typeof ticketContract.removeTicket
 > = async ({ req }) => {
   try {
@@ -100,5 +149,6 @@ export const removeTicket: AppRouteMutationImplementation<
 
 export const ticketMutationHandler = {
   updateTicketStatus,
+  updateTicketDiscount,
   removeTicket,
 };

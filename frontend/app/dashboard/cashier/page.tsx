@@ -12,7 +12,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-
+import { ticketApi } from "@/lib/api/ticket.api";
 import {
   Dialog,
   DialogContent,
@@ -109,24 +109,20 @@ export default function CashierDashboard() {
   const discountValue = Math.max(0, Number(discountInput) || 0);
   const ticketTotal = Math.max(0, ticketSubtotal - discountValue);
 
-  const handleSaveDiscount = async () => {
-    if (!selectedTicket?._id) return;
-    setIsSavingDiscount(true);
-    try {
-      // TODO: replace with a real API call once a backend endpoint exists.
-      // Example shape, once available:
-      // await ticketApi.updateTicketDiscountApi(selectedTicket._id, discountValue);
-      console.warn(
-        "No backend endpoint exists yet to persist ticket discount. " +
-          "This save is currently local-only and will not survive a refresh.",
-      );
-      setSelectedTicket((prev: any) =>
-        prev ? { ...prev, discount: discountValue } : prev,
-      );
-    } finally {
-      setIsSavingDiscount(false);
-    }
-  };
+ const handleSaveDiscount = async () => {
+  if (!selectedTicket?._id) return;
+  setIsSavingDiscount(true);
+  try {
+    await ticketApi.updateTicketDiscountApi(selectedTicket._id, discountValue);
+    setSelectedTicket((prev: any) =>
+      prev ? { ...prev, discount: discountValue } : prev,
+    );
+  } catch (error) {
+    console.error("Failed to save discount:", error);
+  } finally {
+    setIsSavingDiscount(false);
+  }
+};
 
   return (
     <div className="space-y-6 print:bg-white">

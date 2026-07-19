@@ -6,40 +6,41 @@ const mapTicket = (ticket: any) => {
   const order = ticket.orderId;
   const table = ticket.tableId;
 
-  return {
-    _id: ticket._id?.toString?.(),
-    ticketNumber: ticket.ticketNumber,
-    status: ticket.status,
-    printed: ticket.printed,
-    createdAt: ticket.createdAt,
+return {
+  _id: ticket._id?.toString?.(),
+  ticketNumber: ticket.ticketNumber,
+  status: ticket.status,
+  printed: ticket.printed,
+  createdAt: ticket.createdAt,
+  discount: ticket.discount ?? 0,
 
-    orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
-    orderNumber: order?.orderNumber || null,
-    customerName: order?.customerName || "Guest",
+  orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
+  orderNumber: order?.orderNumber || null,
+  customerName: order?.customerName || "Guest",
 
-    waiter: {
-      waiterId:
-        order?.waiterId?._id?.toString?.() || order?.waiterId?.toString?.(),
-      name: order?.waiterId?.name || null,
-    },
-
-    table: {
-      tableId: table?._id?.toString?.() || ticket.tableId?.toString?.(),
-      tableName: table?.name || null,
-      capacity: table?.capacity || null,
-      status: table?.status || null,
-    },
-
-   items: (ticket.items ?? []).map((i: any) => ({
-  menuItem: {
-    _id: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
-    categoryId: i.menuItemId?.categoryId?.toString?.() || "",
+  waiter: {
+    waiterId:
+      order?.waiterId?._id?.toString?.() || order?.waiterId?.toString?.(),
+    name: order?.waiterId?.name || null,
   },
-  name: i.name,
-  quantity: i.quantity,
-  price: i.price,
-})),
-  };
+
+  table: {
+    tableId: table?._id?.toString?.() || ticket.tableId?.toString?.(),
+    tableName: table?.name || null,
+    capacity: table?.capacity || null,
+    status: table?.status || null,
+  },
+
+  items: (ticket.items ?? []).map((i: any) => ({
+    menuItem: {
+      _id: i.menuItemId?._id?.toString?.() || i.menuItemId?.toString?.(),
+      categoryId: i.menuItemId?.categoryId?.toString?.() || "",
+    },
+    name: i.name,
+    quantity: i.quantity,
+    price: i.price,
+  })),
+};
 };
 
 export const getTicketById: AppRouteQueryImplementation<

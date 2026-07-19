@@ -14,6 +14,7 @@ export interface IKitchenTicket extends Document {
   items: IKitchenTicketItem[];
   printed: boolean;
   status: "pending" | "served" | "cancelled" | "completed";
+  discount: number;
 }
 
 const KitchenTicketItemSchema = new Schema<IKitchenTicketItem>(
@@ -23,12 +24,10 @@ const KitchenTicketItemSchema = new Schema<IKitchenTicketItem>(
       ref: "MenuItem",
       required: true,
     },
-
     name: {
       type: String,
       required: true,
     },
-
     quantity: {
       type: Number,
       required: true,
@@ -50,32 +49,31 @@ const KitchenTicketSchema = new Schema<IKitchenTicket>(
       ref: "Order",
       required: true,
     },
-
     tableId: {
       type: Schema.Types.ObjectId,
       ref: "Table",
       required: true,
     },
-
     ticketNumber: {
       type: Number,
       required: true,
     },
-
     items: {
       type: [KitchenTicketItemSchema],
       default: [],
     },
-
     printed: {
       type: Boolean,
       default: false,
     },
-
     status: {
       type: String,
       enum: ["pending", "served", "cancelled", "completed"],
       default: "pending",
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
   },
   {

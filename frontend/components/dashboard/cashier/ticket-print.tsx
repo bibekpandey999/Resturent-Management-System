@@ -5,11 +5,13 @@ import { TTicket } from "@/lib/types/ticket.types";
 export default function OrderTicketPrint({ order }: { order: TTicket }) {
   if (!order) return null;
 
-  const subtotal = (order.items ?? []).reduce(
-    (sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 0),
-    0
-  );
-const total = subtotal;
+ const subtotal = (order.items ?? []).reduce(
+  (sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 0),
+  0
+);
+const discount = order.discount ?? 0;
+const total = Math.max(0, subtotal - discount);
+
 
   return (
     <div className="hidden print:block">
@@ -51,7 +53,7 @@ const total = subtotal;
 
           <div className="flex justify-between">
             <span>Customer</span>
-            <span>{order.order?.customerName || "Guest"}</span>
+           <span>{order.customerName || "Guest"}</span>
           </div>
 
           <div className="flex justify-between">
@@ -86,19 +88,25 @@ const total = subtotal;
 </div>
 
         {/* Totals */}
-        <div className="border-t border-b border-gray-200 py-2 mt-1">
-          <div className="flex justify-between text-[13px]">
-            <span>Subtotal</span>
-            <span>Rs. {subtotal.toFixed(2)}</span>
-          </div>
+       {/* Totals */}
+<div className="border-t border-b border-gray-200 py-2 mt-1">
+  <div className="flex justify-between text-[13px]">
+    <span>Subtotal</span>
+    <span>Rs. {subtotal.toFixed(2)}</span>
+  </div>
 
-       
+  {discount > 0 && (
+    <div className="flex justify-between text-[13px] text-red-600">
+      <span>Discount</span>
+      <span>- Rs. {discount.toFixed(2)}</span>
+    </div>
+  )}
 
-          <div className="flex justify-between font-bold text-[14px] text-base mt-1">
-            <span>TOTAL</span>
-            <span>Rs. {total.toFixed(2)}</span>
-          </div>
-        </div>
+  <div className="flex justify-between font-bold text-[14px] text-base mt-1">
+    <span>TOTAL</span>
+    <span>Rs. {total.toFixed(2)}</span>
+  </div>
+</div>
 
         {/* Footer */}
         <div className="text-center mt-4 space-y-1">

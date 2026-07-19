@@ -36,4 +36,6 @@ export interface TTicket {
   table?: TTicketTable;
   waiter?: TTicketWaiter;
   items: TTicketItem[];
+  discount?: number;
+  customerName?: string | null;
 }

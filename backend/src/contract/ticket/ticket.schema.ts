@@ -8,7 +8,10 @@ export const kitchenTicketStatusEnum = z.enum([
 ]);
 
 export const kitchenTicketItemSchema = z.object({
-  menuItemId: z.string(),
+  menuItem: z.object({
+    _id: z.string().optional(),
+    categoryId: z.string().optional(),
+  }).optional(),
   name: z.string(),
   quantity: z.number().min(1),
   price: z.number(),
@@ -26,19 +29,16 @@ export const kitchenTicketTableSchema = z.object({
   status: z.string().nullable().optional(),
 });
 
-export const kitchenTicketOrderSchema = z.object({
-  orderId: z.string(),
-  orderNumber: z.string().nullable().optional(),
-  customerName: z.string().nullable().optional(),
-});
-
 export const kitchenTicketSchema = z.object({
   _id: z.string(),
   ticketNumber: z.number(),
   status: kitchenTicketStatusEnum,
   printed: z.boolean(),
   createdAt: z.date().optional(),
-  order: kitchenTicketOrderSchema.optional(),
+  discount: z.number().optional(),
+  orderId: z.string().optional(),
+  orderNumber: z.string().nullable().optional(),
+  customerName: z.string().nullable().optional(),
   table: kitchenTicketTableSchema.optional(),
   waiter: kitchenTicketWaiterSchema.optional(),
   items: z.array(kitchenTicketItemSchema),
