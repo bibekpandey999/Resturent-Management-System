@@ -9,8 +9,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
     (sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 0),
     0
   );
-  const tax = Number((subtotal * 0.1).toFixed(2));
-  const total = subtotal + tax;
+const total = subtotal;
 
   return (
     <div className="hidden print:block">
@@ -93,10 +92,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
             <span>Rs. {subtotal.toFixed(2)}</span>
           </div>
 
-          <div className="flex justify-between text-[13px]">
-            <span>Tax</span>
-            <span>Rs. {tax.toFixed(2)}</span>
-          </div>
+       
 
           <div className="flex justify-between font-bold text-[14px] text-base mt-1">
             <span>TOTAL</span>
