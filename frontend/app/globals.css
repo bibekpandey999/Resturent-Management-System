@@ -153,11 +153,19 @@
     min-width: 44px;
   }
 }
-
 @media print {
   @page {
     size: 80mm auto;
     margin: 0;
+  }
+
+  html, body {
+    width: 80mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
   }
 
   body * {
@@ -169,18 +177,11 @@
     visibility: visible;
   }
 
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-
   .receipt-print {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: static !important;
     width: 80mm !important;
     max-width: 80mm !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 2mm !important;
     border: none !important;
