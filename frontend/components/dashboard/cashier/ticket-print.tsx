@@ -11,11 +11,16 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
       style={{ width: "80mm" }}
     >
       {/* HEADER */}
-      <div className="text-center mb-2">
-        <h2 className="font-bold text-[16px] tracking-wide">Local Vibes</h2>
-        <p className="text-[11px] text-gray-600">Kitchen Order Slip</p>
-      </div>
-
+       <div className="text-center border-b border-gray-200 pb-2">
+          <div className="flex items-center justify-between text-[10px]">
+            <span>Estd: 2068/2/21</span>
+            <span>PAN: 123S34Ft-V21</span>
+          </div>
+          <h1 className="text-xl font-bold tracking-wider">Local Vibes Cafe & Bar</h1>
+          <p className="text-[10px] text-gray-600">
+            Butwal 10, Kalikanagar
+          </p>
+        </div>
       <div className="border-t border-dashed border-black my-2" />
 
       {/* TICKET INFO */}
