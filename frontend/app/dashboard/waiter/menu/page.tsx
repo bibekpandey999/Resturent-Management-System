@@ -360,22 +360,21 @@ export default function WaiterMenuPage() {
                   </div>
 
                   <div className="space-y-3">
-                    {selectedItems.map((item: TMenuItem) => (
-                      <div
-                        key={item._id}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="text-sm text-muted-foreground">
-                          {item.name} x {quantities[item._id]}
-                        </span>
-                        <span className="text-sm font-semibold text-foreground">
-                          Rs{" "}
-                          {(item.price * (quantities[item._id] ?? 0)).toFixed(
-                            2,
-                          )}
-                        </span>
-                      </div>
-                    ))}
+                  {selectedItems.map((item: TMenuItem) => (
+  <div key={item._id} className="flex items-center justify-between">
+    <div className="flex flex-col">
+      <span className="text-sm text-muted-foreground">
+        {item.name} x {quantities[item._id]}
+      </span>
+      <span className="text-xs text-muted-foreground/70">
+        Rs {item.price.toFixed(2)} each
+      </span>
+    </div>
+    <span className="text-sm font-semibold text-foreground">
+      Rs {(item.price * (quantities[item._id] ?? 0)).toFixed(2)}
+    </span>
+  </div>
+))}
                   </div>
 
                   <Separator />
