@@ -22,10 +22,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
 
         {/* Ticket Info */}
         <div className="py-2 border-b border-gray-200">
-          <div className="flex justify-between">
-            <span>Ticket</span>
-            <span className="font-semibold">#{order.ticketNumber}</span>
-          </div>
+          
 
           <div className="flex justify-between">
             <span>Order</span>
@@ -54,11 +51,6 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
             <span>{order.order?.customerName || "Guest"}</span>
           </div>
 
-          <div className="flex justify-between">
-            <span>Waiter</span>
-            <span>{order.waiter?.name || "-"}</span>
-          </div>
-        </div>
 
         {/* Items Header */}
         <div className="py-2">
@@ -79,7 +71,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
 
         {/* Footer */}
         <div className="text-center mt-4 space-y-1">
-          <p className="font-semibold">Kitchen Copy</p>
+          <p className="font-semibold">Visit again</p>
 
           <div className="border-t border-gray-200 mt-2 pt-2 text-[9px]">
             Powered by DineFlow
