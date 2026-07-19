@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -20,6 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useReactToPrint } from "react-to-print";
+import { useRef } from "react";
 
 import OrderTicketPrint from "@/components/dashboard/cashier/ticket-print";
 import { TicketTable } from "@/components/shared/ticketTable";
@@ -33,12 +35,10 @@ export default function CashierDashboard() {
   const [toDate, setToDate] = useState<string>("");
 
   const { data: ticketData } = useLiveTickets({});
-
   const tickets = ticketData?.data ?? [];
 
   const filteredTickets = tickets.filter((ticket: TTicket) => {
     const createdAt = new Date(ticket.createdAt || "");
-
     const q = searchTerm.trim().toLowerCase();
 
     const matchesSearch =
@@ -50,10 +50,8 @@ export default function CashierDashboard() {
         (item.name || "").toLowerCase().includes(q),
       );
 
-    // DATE
     const from = fromDate ? new Date(fromDate) : null;
     const to = toDate ? new Date(toDate) : null;
-
     let toEnd: Date | null = null;
     if (to) {
       toEnd = new Date(to);
@@ -70,30 +68,65 @@ export default function CashierDashboard() {
 
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
+  const [discountInput, setDiscountInput] = useState<string>("0");
+  const [isSavingDiscount, setIsSavingDiscount] = useState(false);
 
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const handlePrintInvoice = useReactToPrint({
-  contentRef: invoiceRef,
-  documentTitle: selectedTicket?.orderNumber || "invoice",
-  pageStyle: `
-    @page {
-      size: 80mm auto;
-      margin: 0;
+    contentRef: invoiceRef,
+    documentTitle: selectedTicket?.orderNumber || "invoice",
+    pageStyle: `
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+      html, body {
+        width: 80mm !important;
+        height: fit-content !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+      }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    `,
+  });
+
+  const openTicketDialog = (ticket: any) => {
+    setSelectedTicket(ticket);
+    setDiscountInput(String(ticket?.discount ?? 0));
+  };
+
+  const ticketSubtotal =
+    selectedTicket?.items?.reduce(
+      (sum: number, it: any) => sum + (it.price ?? 0) * (it.quantity ?? 0),
+      0,
+    ) ?? 0;
+
+  const discountValue = Math.max(0, Number(discountInput) || 0);
+  const ticketTotal = Math.max(0, ticketSubtotal - discountValue);
+
+  const handleSaveDiscount = async () => {
+    if (!selectedTicket?._id) return;
+    setIsSavingDiscount(true);
+    try {
+      // TODO: replace with a real API call once a backend endpoint exists.
+      // Example shape, once available:
+      // await ticketApi.updateTicketDiscountApi(selectedTicket._id, discountValue);
+      console.warn(
+        "No backend endpoint exists yet to persist ticket discount. " +
+          "This save is currently local-only and will not survive a refresh.",
+      );
+      setSelectedTicket((prev: any) =>
+        prev ? { ...prev, discount: discountValue } : prev,
+      );
+    } finally {
+      setIsSavingDiscount(false);
     }
-    html, body {
-      width: 80mm !important;
-      height: fit-content !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: white !important;
-    }
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-  `,
-});
+  };
 
   return (
     <div className="space-y-6 print:bg-white">
@@ -155,12 +188,10 @@ export default function CashierDashboard() {
               </CardDescription>
             </CardHeader>
             <div className="flex flex-col gap-4 px-4 lg:flex-row lg:items-end lg:justify-between">
-              {/* SEARCH */}
               <div className="w-full lg:max-w-md space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Search
                 </label>
-
                 <Input
                   className="w-full"
                   placeholder="Order #, table, waiter"
@@ -211,7 +242,7 @@ export default function CashierDashboard() {
             <CardContent className="w-[280px] md:w-[700px] lg:w-full overflow-x-scroll">
               <TicketTable
                 tickets={filteredTickets}
-                onView={setSelectedTicket}
+                onView={openTicketDialog}
                 onPrint={(ticket) => {
                   setPrintedTicket(ticket);
                   setTimeout(() => {
@@ -242,26 +273,62 @@ export default function CashierDashboard() {
                   <div>Table: {selectedTicket.table?.tableName || "-"}</div>
                   <div>Waiter: {selectedTicket.waiter?.name || "-"}</div>
                   <div>Status: {selectedTicket.status}</div>
+
                   <div className="border-t pt-3">
                     <h4 className="font-semibold">Items</h4>
                     <div className="space-y-2 mt-2">
                       {selectedTicket.items?.map((it: any) => (
-  <div
-    key={it.menuItemId}
-    className="flex justify-between"
-  >
-    <div className="flex flex-col">
-      <span>{it.name} × {it.quantity}</span>
-      <span className="text-xs text-muted-foreground">
-        Rs {it.price?.toFixed(2) ?? "0.00"} each
-      </span>
-    </div>
-    <span className="font-medium">
-      Rs {((it.price ?? 0) * (it.quantity ?? 0)).toFixed(2)}
-    </span>
-  </div>
-))}
+                        <div key={it.menuItemId} className="flex justify-between">
+                          <div className="flex flex-col">
+                            <span>
+                              {it.name} × {it.quantity}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              Rs {it.price?.toFixed(2) ?? "0.00"} each
+                            </span>
+                          </div>
+                          <span className="font-medium">
+                            Rs {((it.price ?? 0) * (it.quantity ?? 0)).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal</span>
+                      <span>Rs {ticketSubtotal.toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <Label htmlFor="discount" className="text-sm shrink-0">
+                        Discount (Rs)
+                      </Label>
+                      <Input
+                        id="discount"
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={discountInput}
+                        onChange={(e) => setDiscountInput(e.target.value)}
+                        className="w-28 text-right"
+                      />
+                    </div>
+
+                    <div className="flex justify-between font-semibold text-foreground border-t pt-2">
+                      <span>Total</span>
+                      <span>Rs {ticketTotal.toFixed(2)}</span>
+                    </div>
+
+                    <Button
+                      onClick={handleSaveDiscount}
+                      disabled={isSavingDiscount}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {isSavingDiscount ? "Saving..." : "Save discount"}
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
@@ -281,13 +348,7 @@ export default function CashierDashboard() {
         </CardContent>
       </Card>
 
-      <div
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          top: 0,
-        }}
-      >
+      <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
         <div ref={invoiceRef}>
           <OrderTicketPrint order={printedTicket} />
         </div>
