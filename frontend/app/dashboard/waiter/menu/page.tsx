@@ -96,8 +96,7 @@ export default function WaiterMenuPage() {
     0,
   );
 
-  const tax = Number((subtotal * 0.1).toFixed(2));
-  const total = subtotal + tax;
+  const total = subtotal;
 
   const orderItems = useMemo(() => {
     return selectedItems.map((item: TMenuItem) => {
@@ -384,10 +383,7 @@ export default function WaiterMenuPage() {
                       <span>Subtotal</span>
                       <span>Rs {subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Tax</span>
-                      <span>Rs {tax.toFixed(2)}</span>
-                    </div>
+                 
                     <div className="flex justify-between font-semibold text-foreground">
                       <span>Total</span>
                       <span>Rs {total.toFixed(2)}</span>
