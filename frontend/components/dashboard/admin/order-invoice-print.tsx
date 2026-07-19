@@ -22,7 +22,7 @@ export default function OrderInvoicePrint({
 
       <hr className="my-2" />
 
-      <p>Order: {order.orderNumber}</p>
+      <p>Order Number: {order.orderNumber}</p>
       <p>Table: {order.table?.name}</p>
       <p>Customer: {order.customerName || "Guest"}</p>
       <p>Date: {new Date(order.createdAt).toLocaleString()}</p>

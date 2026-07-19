@@ -212,24 +212,36 @@ export default function CashierTablesPage() {
             </Card>
 
             <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Quick actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  onClick={() =>
-                    markServed({
-                      tableId: selectedTable?._id || "",
-                      status: "available",
-                    })
-                  }
-                  variant="secondary"
-                  className="w-full cursor-pointer"
-                >
-                  Reset Table
-                </Button>
-              </CardContent>
-            </Card>
+  <CardHeader>
+    <CardTitle>Quick actions</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-3">
+    <label className="text-sm font-medium text-foreground">
+      Change table status
+    </label>
+    <Select
+      value={selectedTable.status}
+      onValueChange={(value) =>
+        markServed({
+          tableId: selectedTable?._id || "",
+          status: value as TableStatus,
+        })
+      }
+      disabled={isPending}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Choose a status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="available">Available</SelectItem>
+        <SelectItem value="occupied">Occupied</SelectItem>
+        <SelectItem value="reserved">Reserved</SelectItem>
+      </SelectContent>
+    </Select>
+  </CardContent>
+</Card>
+
+
           </div>
         )}
       </div>
