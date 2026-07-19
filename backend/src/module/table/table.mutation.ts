@@ -23,9 +23,10 @@ export const createTable: AppRouteMutationImplementation<
     }
 
     const data = await tableRepository.create({
-      ...req.body,
-      sectionId: new mongoose.Types.ObjectId(req.body.sectionId),
-    });
+  ...req.body,
+  sectionId: new mongoose.Types.ObjectId(req.body.sectionId),
+  status: req.body.status as "available" | "occupied" | "reserved" | undefined,
+});
 
     try {
       const io = getIO();
