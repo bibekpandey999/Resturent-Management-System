@@ -162,9 +162,6 @@
 
   html, body {
     width: 80mm !important;
-    height: fit-content !important;
-    min-height: 0 !important;
-    max-height: none !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
@@ -184,7 +181,6 @@
     position: static !important;
     width: 80mm !important;
     max-width: 80mm !important;
-    height: fit-content !important;
     margin: 0 !important;
     padding: 2mm !important;
     border: none !important;
