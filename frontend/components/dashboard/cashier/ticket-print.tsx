@@ -18,7 +18,6 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
         {/* Header */}
         <div className="text-center border-b border-gray-200 pb-2">
           <div className="flex items-center justify-between text-[10px]">
-            <span>Estd: 2068/2/21</span>
             <span>PAN: 123S34Ft-V21</span>
           </div>
           <h1 className="text-xl font-bold tracking-wider">Local Vibes Cafe & Bar</h1>
@@ -27,10 +26,7 @@ export default function OrderTicketPrint({ order }: { order: TTicket }) {
 
         {/* Ticket Info */}
         <div className="py-2 border-b border-gray-200">
-          <div className="flex justify-between">
-            <span>Ticket</span>
-            <span className="font-semibold">#{order.ticketNumber}</span>
-          </div>
+          
 
           <div className="flex justify-between">
             <span>Order</span>
