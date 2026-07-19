@@ -42,6 +42,13 @@ const updateTicketDiscountApi = async (ticketId: string, discount: number) => {
   return response.data;
 };
 
+const markTicketPrintedApi = async (ticketId: string) => {
+  const response = await apiClient.put(`/ticket/${ticketId}`, {
+    printed: true,
+  });
+  return response.data;
+};
+
 export const ticketApi = {
   getLiveTicketsApi,
   getTicketByIdApi,
@@ -49,4 +56,7 @@ export const ticketApi = {
   updateTicketDiscountApi,
   deleteticketApi,
   getTicketsByOrderApi,
+  markTicketPrintedApi,
 };
+
+

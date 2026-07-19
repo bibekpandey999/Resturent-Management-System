@@ -13,7 +13,7 @@ export interface IKitchenTicket extends Document {
   ticketNumber: number;
   items: IKitchenTicketItem[];
   printed: boolean;
-  status: "pending" | "served" | "cancelled" | "completed";
+  status: "pending" | "preparing" | "ready" | "served" | "cancelled" | "completed";
   discount: number;
 }
 
@@ -66,11 +66,11 @@ const KitchenTicketSchema = new Schema<IKitchenTicket>(
       type: Boolean,
       default: false,
     },
-    status: {
-      type: String,
-      enum: ["pending", "served", "cancelled", "completed"],
-      default: "pending",
-    },
+   status: {
+  type: String,
+  enum: ["pending", "preparing", "ready", "served", "cancelled", "completed"],
+  default: "pending",
+},
     discount: {
       type: Number,
       default: 0,

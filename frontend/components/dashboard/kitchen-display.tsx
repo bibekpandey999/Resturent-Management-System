@@ -3,19 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, ChefHat, CheckCircle2 } from 'lucide-react';
-import type { Order, OrderItem, OrderStatus } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
+import { TTicket, TTicketItem } from '@/lib/types/ticket.types';
+
+type TicketStatus = TTicket['status'];
 
 interface KitchenOrderCardProps {
-  order: Order;
-  onMarkReady?: (order: Order) => void;
-  onMarkItemReady?: (order: Order, item: OrderItem) => void;
-  onChangeItemStatus?: (order: Order, item: OrderItem, status: Order['status']) => void;
-  onChangeOrderStatus?: (order: Order, status: Order['status']) => void;
+  order: TTicket;
+  onMarkReady?: (order: TTicket) => void;
+  onMarkItemReady?: (order: TTicket, item: TTicketItem) => void;
+  onChangeItemStatus?: (order: TTicket, item: TTicketItem, status: TicketStatus) => void;
+  onChangeOrderStatus?: (order: TTicket, status: TicketStatus) => void;
 }
 
-const statusConfig: Record<OrderStatus, { label: string; className: string }> = {
+const statusConfig: Record<TicketStatus, { label: string; className: string }> = {
   pending: { label: 'Pending', className: 'bg-warning/20 text-warning border-warning/30' },
   preparing: { label: 'Preparing', className: 'bg-info/20 text-info border-info/30' },
   ready: { label: 'Ready', className: 'bg-success/20 text-success border-success/30' },
@@ -24,7 +26,6 @@ const statusConfig: Record<OrderStatus, { label: string; className: string }> = 
   cancelled: { label: 'Cancelled', className: 'bg-destructive/20 text-destructive border-destructive/30' },
 };
 
-// Hook to calculate 15-minute countdown timer
 function useOrderTimer(createdAt: Date) {
   const [timeRemaining, setTimeRemaining] = useState<string>('15:00');
   const [isOvertime, setIsOvertime] = useState(false);
@@ -32,17 +33,13 @@ function useOrderTimer(createdAt: Date) {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      const elapsed = (now.getTime() - createdAt.getTime()) / 1000; // seconds
-      const remaining = Math.max(0, 15 * 60 - elapsed); // 15 minutes = 900 seconds
-
+      const elapsed = (now.getTime() - createdAt.getTime()) / 1000;
+      const remaining = Math.max(0, 15 * 60 - elapsed);
       const minutes = Math.floor(remaining / 60);
       const seconds = Math.floor(remaining % 60);
-      const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      
-      setTimeRemaining(formatted);
+      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
       setIsOvertime(remaining <= 0);
     }, 1000);
-
     return () => clearInterval(timer);
   }, [createdAt]);
 
@@ -50,17 +47,19 @@ function useOrderTimer(createdAt: Date) {
 }
 
 export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChangeItemStatus, onChangeOrderStatus }: KitchenOrderCardProps) {
-  const timeAgo = formatDistanceToNow(order.createdAt, { addSuffix: false });
-  const status = statusConfig[order.status];
-  const { timeRemaining, isOvertime } = useOrderTimer(order.createdAt);
-  
-  // Filter items that need kitchen attention (not drinks/beverages)
- const kitchenItems = order.items.filter(
-  item => !item.menuItem?.categoryId?.includes('cat-5')
-);
-  
-  const allItemsCooked = kitchenItems.every(item => item.status === 'ready' || item.status === 'served');
-  const isPriority = parseInt(timeAgo) > 20; // More than 20 minutes
+  const createdAtDate = order.createdAt ? new Date(order.createdAt) : new Date();
+  const timeAgo = formatDistanceToNow(createdAtDate, { addSuffix: false });
+  const status = statusConfig[order.status] ?? statusConfig.pending;
+  const { timeRemaining, isOvertime } = useOrderTimer(createdAtDate);
+
+  const kitchenItems = order.items ?? [];
+
+  const allItemsCooked = kitchenItems.every(
+    (item) => item.status === 'ready' || item.status === 'served'
+  );
+
+  const ageMinutes = (Date.now() - createdAtDate.getTime()) / (1000 * 60);
+  const isPriority = ageMinutes > 20;
 
   return (
     <Card className={cn(
@@ -75,10 +74,10 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
               'flex size-14 items-center justify-center rounded-xl text-2xl font-bold',
               isOvertime ? 'bg-destructive/20 text-destructive' : isPriority && order.status !== 'ready' ? 'bg-destructive/20 text-destructive' : 'bg-secondary text-foreground'
             )}>
-              {order.table.number}
+              {order.table?.tableName ?? '—'}
             </div>
             <div>
-              <CardTitle className="text-lg text-foreground">{order.orderNumber}</CardTitle>
+              <CardTitle className="text-lg text-foreground">{order.ticketNumber}</CardTitle>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="size-3" />
                 <span>{timeAgo} ago</span>
@@ -100,13 +99,12 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {kitchenItems.map((item) => {
-            const itemStatus = statusConfig[item.status];
+          {kitchenItems.map((item, idx) => {
             const isCooked = item.status === 'ready' || item.status === 'served';
-            
+
             return (
-              <div 
-                key={item.id} 
+              <div
+                key={item.menuItemId ?? idx}
                 className={cn(
                   'flex items-center justify-between rounded-lg border p-3 transition-colors',
                   isCooked ? 'border-success/30 bg-success/5' : 'border-border bg-secondary/30'
@@ -124,7 +122,7 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
                       'font-medium',
                       isCooked ? 'text-success line-through' : 'text-foreground'
                     )}>
-                      {item.menuItem.name}
+                      {item.name}
                     </p>
                     {item.notes && (
                       <p className="text-xs text-warning">{item.notes}</p>
@@ -140,7 +138,7 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
                       onChangeItemStatus(order, item, 'ready');
                     }}
                   >
-                    {item.status === 'pending' ? 'Uncooked' : 'Cooked'}
+                    {item.status === 'pending' || !item.status ? 'Uncooked' : 'Cooked'}
                   </Button>
                 )}
                 {isCooked && (
@@ -153,21 +151,21 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
             );
           })}
         </div>
-        
+
         {order.notes && (
           <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
             <p className="text-sm text-warning">Note: {order.notes}</p>
           </div>
         )}
-        
+
         {onChangeOrderStatus && (
           <Button
             className="w-full mt-4 touch-target"
             onClick={() => {
-              let next: OrderStatus;
+              let next: TicketStatus;
               if (order.status === 'pending') next = 'preparing';
               else if (order.status === 'preparing') next = 'ready';
-              else next = 'ready'; // stay at ready
+              else next = 'ready';
               onChangeOrderStatus(order, next);
             }}
             disabled={!allItemsCooked && order.status === 'pending'}
@@ -176,7 +174,7 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
             {order.status === 'pending' ? 'Start Preparing' : order.status === 'preparing' && allItemsCooked ? 'Mark Order Ready' : 'Preparing...'}
           </Button>
         )}
-        
+
         {order.status === 'ready' && (
           <div className="mt-4 rounded-lg bg-success/20 p-3 text-center">
             <p className="text-sm font-medium text-success">Order ready for pickup!</p>
@@ -188,11 +186,11 @@ export function KitchenOrderCard({ order, onMarkReady, onMarkItemReady, onChange
 }
 
 interface KitchenDisplayProps {
-  orders: Order[];
-  onMarkReady?: (order: Order) => void;
-  onMarkItemReady?: (order: Order, item: OrderItem) => void;
-  onChangeItemStatus?: (order: Order, item: OrderItem, status: Order['status']) => void;
-  onChangeOrderStatus?: (order: Order, status: Order['status']) => void;
+  orders: TTicket[];
+  onMarkReady?: (order: TTicket) => void;
+  onMarkItemReady?: (order: TTicket, item: TTicketItem) => void;
+  onChangeItemStatus?: (order: TTicket, item: TTicketItem, status: TicketStatus) => void;
+  onChangeOrderStatus?: (order: TTicket, status: TicketStatus) => void;
 }
 
 export function KitchenDisplay({ orders, onMarkReady, onMarkItemReady, onChangeItemStatus, onChangeOrderStatus }: KitchenDisplayProps) {
@@ -202,7 +200,6 @@ export function KitchenDisplay({ orders, onMarkReady, onMarkItemReady, onChangeI
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
       <div className="flex flex-wrap gap-2">
         <Badge variant="outline" className={statusConfig.pending.className}>
           Pending: {pendingOrders.length}
@@ -215,11 +212,10 @@ export function KitchenDisplay({ orders, onMarkReady, onMarkItemReady, onChangeI
         </Badge>
       </div>
 
-      {/* Orders Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[...pendingOrders, ...preparingOrders, ...readyOrders].map((order) => (
           <KitchenOrderCard
-            key={order.id}
+            key={order._id}
             order={order}
             onMarkReady={onMarkReady}
             onMarkItemReady={onMarkItemReady}

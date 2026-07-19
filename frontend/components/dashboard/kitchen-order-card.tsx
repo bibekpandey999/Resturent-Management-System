@@ -16,6 +16,14 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
     label: "Pending",
     className: "bg-warning/20 text-warning border-warning/30",
   },
+  preparing: {
+    label: "Preparing",
+    className: "bg-info/20 text-info border-info/30",
+  },
+  ready: {
+    label: "Ready",
+    className: "bg-success/20 text-success border-success/30",
+  },
   served: {
     label: "Served",
     className: "bg-primary/20 text-primary border-primary/30",
@@ -36,9 +44,9 @@ export function KitchenOrderCard({
   onClick,
 }: OrderCardProps) {
   const status = statusConfig[order.status];
-  const timeAgo = formatDistanceToNow(order.createdAt || "", {
-    addSuffix: true,
-  });
+ const timeAgo = formatDistanceToNow(order.createdAt ? new Date(order.createdAt) : new Date(), {
+  addSuffix: true,
+});
 
   const totalPrice = order.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -60,17 +68,16 @@ export function KitchenOrderCard({
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">
-              {order.orderNumber}
-            </p>
-            <p className="md:text-sm text-[10px] text-muted-foreground">
-              {timeAgo}
-            </p>
-            {/** @ts-ignore */}
-            {(order as any).customerName && (
-              <p className="text-[10px] text-muted-foreground">
-                Customer: {(order as any).customerName}
-              </p>
-            )}
+  {order.orderNumber}
+</p>
+<p className="md:text-sm text-[10px] text-muted-foreground">
+  {timeAgo}
+</p>
+{order.customerName && (
+  <p className="text-[10px] text-muted-foreground">
+    Customer: {order.customerName}
+  </p>
+)}
           </div>
         </div>
         <div className="md:flex md:items-center grid grid-cols-1 gap-1 md:gap-2">
@@ -123,9 +130,9 @@ export function KitchenOrderCard({
             <span className="text-sm text-muted-foreground">
               Server: {order.waiter?.name}
             </span>
-            <span className="text-lg font-bold text-foreground">
-              ${order.order?.customerName}
-            </span>
+           <span className="text-lg font-bold text-foreground">
+  Rs {order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+</span>
           </div>
         </div>
       </CardContent>

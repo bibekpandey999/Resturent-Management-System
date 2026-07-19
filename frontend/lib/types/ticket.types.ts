@@ -1,10 +1,12 @@
-export type Status = "pending" | "served" | "cancelled" | "completed";
+export type Status = "pending" | "preparing" | "ready" | "served" | "cancelled" | "completed";
 
 export interface TTicketItem {
   menuItemId: string;
   name: string;
   quantity: number;
   price: number;
+  status?: Status;
+  notes?: string | null;
 }
 
 export interface TTicketWaiter {
@@ -38,4 +40,5 @@ export interface TTicket {
   items: TTicketItem[];
   discount?: number;
   customerName?: string | null;
+  notes?: string | null;
 }

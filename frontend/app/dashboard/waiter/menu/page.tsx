@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { billApi } from "@/lib/api/bill.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -130,33 +131,64 @@ export default function WaiterMenuPage() {
     },
   });
 
-  const { mutate, isPending: isCreatingOrder } = useMutation({
-    mutationFn: orderApi.createOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["active-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
+ const { mutate, isPending: isCreatingOrder } = useMutation({
+  mutationFn: orderApi.createOrder,
+  onSuccess: async (orderRes: any) => {
+    queryClient.invalidateQueries({ queryKey: ["active-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["tables"] });
 
-      setQuantities({});
+    const createdOrder = orderRes?.data;
 
-      toast({
-        title: "Order created",
-        description: `Order sent to kitchen for Table ${selectedTable?.name}.`,
+    try {
+      const billSubtotal = createdOrder.items.reduce(
+        (sum: number, item: { price: number; quantity: number }) =>
+          sum + item.price * item.quantity,
+        0
+      );
+      const tax = 0;
+      const billTotal = billSubtotal + tax;
+
+      await billApi.createBill({
+        orderId: createdOrder._id,
+        tableId: createdOrder.tableId,
+        items: createdOrder.items,
+        subtotal: billSubtotal,
+        tax,
+        total: billTotal,
+        status: "unpaid",
       });
 
-      router.push("/dashboard/waiter/orders");
-    },
-    onError: (error: any) => {
+      queryClient.invalidateQueries({ queryKey: ["bills"] });
+    } catch (billError) {
+      console.error("Bill auto-creation failed:", billError);
       toast({
         variant: "destructive",
-        title: "Unable to create order",
-        description:
-          error?.response?.data?.error ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Please try again or select another table.",
+        title: "Bill generation failed",
+        description: "Order was placed, but the bill could not be created automatically.",
       });
-    },
-  });
+    }
+
+    setQuantities({});
+
+    toast({
+      title: "Order created",
+      description: `Order sent to kitchen for Table ${selectedTable?.name}. Bill generated automatically.`,
+    });
+
+    router.push("/dashboard/waiter/orders");
+  },
+  onError: (error: any) => {
+    toast({
+      variant: "destructive",
+      title: "Unable to create order",
+      description:
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Please try again or select another table.",
+    });
+  },
+});
 
   const increaseQuantity = (menuItem: TMenuItem) => {
     setQuantities((current) => ({
@@ -203,6 +235,9 @@ export default function WaiterMenuPage() {
       items: data.items,
     });
   };
+
+
+
 
   return (
     <div id="search" className="space-y-6">
