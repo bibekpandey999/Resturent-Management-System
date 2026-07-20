@@ -304,11 +304,10 @@ await refetch();
 
                    {discountAmount > 0 && (
   <div className="flex justify-between text-sm text-muted-foreground">
-    <span>Discount ({rawPercent}%)</span>
-    <span>- Rs {discountAmount.toFixed(2)}</span>
+    <span>Discount</span>
+    <span>{rawPercent}%</span>
   </div>
 )}
-
                    <div className="flex items-center justify-between gap-3">
   <Label htmlFor="discount" className="text-sm shrink-0">
     Discount (%)
