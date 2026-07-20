@@ -425,15 +425,6 @@ export default function UsersPage() {
                   <TableCell>
                     <div className="flex items-center gap-4">
 
-
-                   
-
-                      <button
-                        onClick={() => setEditId(user._id)}
-                        className="flex items center text-green-600 hover:text-green-700 p-1 rounded"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
                       <button
                         onClick={() => setItemToRemove(user._id)}
                         className="flex items center text-red-600 hover:text-red-700 p-1 rounded"
