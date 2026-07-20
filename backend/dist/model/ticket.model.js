@@ -78,10 +78,20 @@ const KitchenTicketSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
-     status: {
+    status: {
         type: String,
         enum: ["pending", "preparing", "ready", "served", "cancelled", "completed"],
         default: "pending",
+    },
+    discount: {
+        type: Number,
+        default: 0,
+    },
+    discountPercent: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
     },
 }, {
     timestamps: true,
