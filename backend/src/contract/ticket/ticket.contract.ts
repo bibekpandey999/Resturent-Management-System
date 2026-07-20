@@ -34,7 +34,10 @@ export const ticketContract = c.router({
   path: "/ticket/:ticketID/discount",
   summary: "Update ticket discount",
   pathParams: z.object({ ticketID: z.string() }),
-  body: z.object({ discount: z.number().min(0) }),
+body: z.object({
+  discount: z.number(),
+  discountPercent: z.number(),
+}),
   responses: { 200: successSchema, 404: errorSchema },
 },
 

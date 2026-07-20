@@ -58,7 +58,7 @@ export const updateTicketDiscount: AppRouteMutationImplementation<
 > = async ({ req }) => {
   try {
     const { ticketID } = req.params;
-    const { discount } = req.body;
+    const { discount, discountPercent } = req.body;
 
     const ticket = await kitchenTicketRepository.getByID(ticketID);
 
@@ -74,6 +74,7 @@ export const updateTicketDiscount: AppRouteMutationImplementation<
 
     const updated = await kitchenTicketRepository.update(ticketID, {
       discount,
+      discountPercent,
     });
 
     try {

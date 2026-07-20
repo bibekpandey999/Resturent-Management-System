@@ -130,8 +130,10 @@ const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
         discountPercent: rawPercent,
       };
 
-    setSelectedTicket(updatedTicket);
-    setPrintedTicket(updatedTicket); // keep print copy in sync
+setSelectedTicket(updatedTicket);
+setDiscountPercent(String(updatedTicket?.discountPercent ?? rawPercent));
+setPrintedTicket(updatedTicket);
+
   } catch (error) {
     console.error("Failed to save discount:", error);
   } finally {
@@ -253,8 +255,11 @@ const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
               <TicketTable
                 tickets={filteredTickets}
                 onView={openTicketDialog}
-                onPrint={(ticket) => {
-  const latest = tickets.find((t: TTicket) => t._id === ticket._id) ?? ticket;
+               onPrint={(ticket) => {
+  const latest =
+    (selectedTicket && selectedTicket._id === ticket._id ? selectedTicket : null) ??
+    tickets.find((t: TTicket) => t._id === ticket._id) ??
+    ticket;
   setPrintedTicket(latest);
   setTimeout(() => {
     handlePrintInvoice();

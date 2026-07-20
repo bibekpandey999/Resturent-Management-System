@@ -36,6 +36,7 @@ export const kitchenTicketSchema = z.object({
   printed: z.boolean(),
   createdAt: z.date().optional(),
   discount: z.number().optional(),
+  discountPercent: z.number().optional(),
   orderId: z.string().optional(),
   orderNumber: z.string().nullable().optional(),
   customerName: z.string().nullable().optional(),
