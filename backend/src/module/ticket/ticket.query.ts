@@ -13,6 +13,7 @@ return {
   printed: ticket.printed,
   createdAt: ticket.createdAt,
   discount: ticket.discount ?? 0,
+  discountPercent: ticket.discountPercent ?? 0,
 
   orderId: order?._id?.toString?.() || ticket.orderId?.toString?.(),
   orderNumber: order?.orderNumber || null,
