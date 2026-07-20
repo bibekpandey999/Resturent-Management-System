@@ -34,10 +34,11 @@ const deleteticketApi = async (ticketId: TDeleteTicketSchema["_id"]) => {
   const response = await apiClient.delete(`/ticket/${ticketId}`);
   return response.data;
 };
-const updateTicketDiscountApi = async (ticketId: string, discount: number) => {
-  const response = await apiClient.put(`/ticket/${ticketId}/discount`, {
-    discount,
-  });
+const updateTicketDiscountApi = async (
+  ticketId: string,
+  payload: { discount: number; discountPercent: number }
+) => {
+  const response = await apiClient.put(`/ticket/${ticketId}/discount`, payload);
 
   return response.data;
 };

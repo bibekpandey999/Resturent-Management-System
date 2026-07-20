@@ -97,7 +97,7 @@ const total = Math.max(0, subtotal - discount);
 
   {discount > 0 && (
     <div className="flex justify-between text-[13px] text-red-600">
-      <span>Discount</span>
+      <span>Discount{order.discountPercent ? ` (${order.discountPercent}%)` : ""}</span>
       <span>- Rs. {discount.toFixed(2)}</span>
     </div>
   )}

@@ -38,7 +38,7 @@ export function formatTimeAgo(date: string | Date) {
 }
 
 export function TicketTable({ tickets, onView, onPrint }: Props) {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
   const { mutate: markServed, isPending } = useUpdateTicketStatus();
 
@@ -54,103 +54,123 @@ export function TicketTable({ tickets, onView, onPrint }: Props) {
           <TableHead>Items</TableHead>
           <TableHead>Duration</TableHead>
           <TableHead>Actions</TableHead>
+          <TableHead>Total</TableHead>
         </TableRow>
       </TableHeader>
 
       <TableBody>
         {tickets.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={8} className="text-center">
+            <TableCell colSpan={9} className="text-center">
               No tickets found
             </TableCell>
           </TableRow>
         ) : (
-          tickets.map((ticket) => (
-            <TableRow key={ticket._id}>
-              <TableCell>#{ticket.ticketNumber}</TableCell>
+          tickets.map((ticket) => {
+            const subtotal =
+              ticket.items?.reduce(
+                (sum: number, it: any) =>
+                  sum + (it.price ?? 0) * (it.quantity ?? 0),
+                0,
+              ) ?? 0;
+            const total = Math.max(0, subtotal - (ticket.discount ?? 0));
 
-              <TableCell>{ticket.orderNumber}</TableCell>
+            return (
+              <TableRow key={ticket._id}>
+                <TableCell>#{ticket.ticketNumber}</TableCell>
 
-              <TableCell>{ticket.customerName}</TableCell>
+                <TableCell>{ticket.orderNumber}</TableCell>
 
-              <TableCell>{ticket.table.tableName}</TableCell>
+                <TableCell>{ticket.customerName}</TableCell>
 
-              <TableCell>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyle(
-                    ticket.status,
-                  )}`}
-                >
-                  {ticket.status}
-                </span>
-              </TableCell>
+                <TableCell>{ticket.table.tableName}</TableCell>
 
-              <TableCell>
-                {ticket.items.map((i: any) => (
-                  <div key={i.menuItemId} className="text-xs">
-                    {i.name} × {i.quantity}
+                <TableCell>
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyle(
+                      ticket.status,
+                    )}`}
+                  >
+                    {ticket.status}
+                  </span>
+                </TableCell>
+
+                <TableCell>
+                  {ticket.items.map((i: any) => (
+                    <div key={i.menuItemId} className="text-xs">
+                      {i.name} × {i.quantity}
+                    </div>
+                  ))}
+                </TableCell>
+
+                <TableCell className="text-xs">
+                  <div>{formatTimeAgo(ticket.createdAt)}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {formatDate(ticket.createdAt)}
                   </div>
-                ))}
-              </TableCell>
+                </TableCell>
 
-              <TableCell className="text-xs">
-                <div>{formatTimeAgo(ticket.createdAt)}</div>
-                <div className="text-[10px] text-muted-foreground">
-                  {formatDate(ticket.createdAt)}
-                </div>
-              </TableCell>
+                <TableCell>
+                  {user?.role === "waiter" ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        disabled={ticket.status === "served" || isPending}
+                        onClick={() =>
+                          markServed({
+                            ticketID: ticket._id,
+                            status: "served",
+                          })
+                        }
+                        className="cursor-pointer text-white hover:bg-green-600 bg-green-700 rounded-md"
+                      >
+                        {ticket.status === "served" ? "Served" : "Mark as Served"}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="cursor-pointer text-white hover:bg-red-600 bg-red-700 rounded-md"
+                        onClick={() =>
+                          markServed({
+                            ticketID: ticket._id,
+                            status: "cancelled",
+                          })
+                        }
+                      >
+                        Cancel Order
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => onView(ticket)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
 
-              <TableCell>
-                {user?.role === "waiter" ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      disabled={ticket.status === "served" || isPending}
-                      onClick={() =>
-                        markServed({
-                          ticketID: ticket._id,
-                          status: "served",
-                        })
-                      }
-                      className="cursor-pointer text-white hover:bg-green-600 bg-green-700 rounded-md"
-                    >
-                      {ticket.status === "served" ? "Served" : "Mark as Served"}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      className="cursor-pointer text-white hover:bg-red-600 bg-red-700 rounded-md"
-                      onClick={() =>
-                        markServed({
-                          ticketID: ticket._id,
-                          status: "cancelled",
-                        })
-                      }
-                    >
-                      Cancel Order
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      onClick={() => onView(ticket)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => onPrint(ticket)}
+                      >
+                        <Printer className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
 
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      onClick={() => onPrint(ticket)}
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))
+                <TableCell>
+                  Rs {total.toFixed(2)}
+                  {ticket.discountPercent > 0 && (
+                    <span className="text-[10px] text-muted-foreground ml-1">
+                      (-{ticket.discountPercent}%)
+                    </span>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })
         )}
       </TableBody>
     </Table>

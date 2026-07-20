@@ -68,8 +68,7 @@ export default function CashierDashboard() {
 
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
-  const [discountInput, setDiscountInput] = useState<string>("0");
-  const [discountType, setDiscountType] = useState<"percent" | "flat">("flat");
+const [discountPercent, setDiscountPercent] = useState<string>("0");
   const [isSavingDiscount, setIsSavingDiscount] = useState(false);
 
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -97,10 +96,9 @@ export default function CashierDashboard() {
   });
 
   const openTicketDialog = (ticket: any) => {
-    setSelectedTicket(ticket);
-    setDiscountInput(String(ticket?.discount ?? 0));
-    setDiscountType("flat");
-  };
+  setSelectedTicket(ticket);
+  setDiscountPercent(String(ticket?.discountPercent ?? 0));
+};
 
   const ticketSubtotal =
     selectedTicket?.items?.reduce(
@@ -108,29 +106,27 @@ export default function CashierDashboard() {
       0,
     ) ?? 0;
 
-  const rawDiscount = Math.max(0, Number(discountInput) || 0);
-
-  const discountAmount =
-    discountType === "percent"
-      ? (ticketSubtotal * Math.min(rawDiscount, 100)) / 100
-      : rawDiscount;
-
-  const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
+  const rawPercent = Math.min(100, Math.max(0, Number(discountPercent) || 0));
+const discountAmount = (ticketSubtotal * rawPercent) / 100;
+const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
 
   const handleSaveDiscount = async () => {
-    if (!selectedTicket?._id) return;
-    setIsSavingDiscount(true);
-    try {
-      await ticketApi.updateTicketDiscountApi(selectedTicket._id, discountAmount);
-      setSelectedTicket((prev: any) =>
-        prev ? { ...prev, discount: discountAmount } : prev,
-      );
-    } catch (error) {
-      console.error("Failed to save discount:", error);
-    } finally {
-      setIsSavingDiscount(false);
-    }
-  };
+  if (!selectedTicket?._id) return;
+  setIsSavingDiscount(true);
+  try {
+    await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
+      discount: discountAmount,
+      discountPercent: rawPercent,
+    });
+    setSelectedTicket((prev: any) =>
+      prev ? { ...prev, discount: discountAmount, discountPercent: rawPercent } : prev,
+    );
+  } catch (error) {
+    console.error("Failed to save discount:", error);
+  } finally {
+    setIsSavingDiscount(false);
+  }
+};
 
   return (
     <div className="space-y-6 print:bg-white">
@@ -305,43 +301,28 @@ export default function CashierDashboard() {
                       <span>Rs {ticketSubtotal.toFixed(2)}</span>
                     </div>
 
-                    {discountAmount > 0 && (
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>
-                          Discount{" "}
-                          {discountType === "percent" ? `(${discountInput}%)` : ""}
-                        </span>
-                        <span>- Rs {discountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
+                   {discountAmount > 0 && (
+  <div className="flex justify-between text-sm text-muted-foreground">
+    <span>Discount ({rawPercent}%)</span>
+    <span>- Rs {discountAmount.toFixed(2)}</span>
+  </div>
+)}
 
-                    <div className="flex items-center justify-between gap-3">
-                      <Label htmlFor="discount" className="text-sm shrink-0">
-                        Discount
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={discountType}
-                          onChange={(e) =>
-                            setDiscountType(e.target.value as "percent" | "flat")
-                          }
-                          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                        >
-                          <option value="flat">Rs</option>
-                          <option value="percent">%</option>
-                        </select>
-                        <Input
-                          id="discount"
-                          type="number"
-                          min={0}
-                          max={discountType === "percent" ? 100 : undefined}
-                          step="0.01"
-                          value={discountInput}
-                          onChange={(e) => setDiscountInput(e.target.value)}
-                          className="w-24 text-right"
-                        />
-                      </div>
-                    </div>
+                   <div className="flex items-center justify-between gap-3">
+  <Label htmlFor="discount" className="text-sm shrink-0">
+    Discount (%)
+  </Label>
+  <Input
+    id="discount"
+    type="number"
+    min={0}
+    max={100}
+    step="0.01"
+    value={discountPercent}
+    onChange={(e) => setDiscountPercent(e.target.value)}
+    className="w-24 text-right"
+  />
+</div>
 
                     <div className="flex justify-between font-semibold text-foreground border-t pt-2">
                       <span>Total</span>
