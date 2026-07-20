@@ -15,6 +15,7 @@ export interface IKitchenTicket extends Document {
   printed: boolean;
   status: "pending" | "preparing" | "ready" | "served" | "cancelled" | "completed";
   discount: number;
+   discountPercent: number;  
 }
 
 const KitchenTicketItemSchema = new Schema<IKitchenTicketItem>(
@@ -74,6 +75,12 @@ const KitchenTicketSchema = new Schema<IKitchenTicket>(
     discount: {
       type: Number,
       default: 0,
+    },
+    discountPercent: {         
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
     },
   },
   {

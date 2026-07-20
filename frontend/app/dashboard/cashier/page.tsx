@@ -34,7 +34,7 @@ export default function CashierDashboard() {
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
 
-  const { data: ticketData } = useLiveTickets({});
+const { data: ticketData, refetch } = useLiveTickets({});
   const tickets = ticketData?.data ?? [];
 
   const filteredTickets = tickets.filter((ticket: TTicket) => {
@@ -115,9 +115,10 @@ const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
   setIsSavingDiscount(true);
   try {
     await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
-      discount: discountAmount,
-      discountPercent: rawPercent,
-    });
+  discount: discountAmount,
+  discountPercent: rawPercent,
+});
+await refetch();
     setSelectedTicket((prev: any) =>
       prev ? { ...prev, discount: discountAmount, discountPercent: rawPercent } : prev,
     );
