@@ -45,6 +45,7 @@ export default function UsersPage() {
   const [formVisible, setFormVisible] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [viewId, setViewId] = useState<string | null>(null);
 
   const { data: userData } = useAllUsers({ role: selectedRole });
   const users = userData?.data ?? [];
@@ -119,6 +120,17 @@ export default function UsersPage() {
       },
     });
   };
+
+  const filteredUsers = useMemo(() => {
+  const q = filter.trim().toLowerCase();
+  if (!q) return users;
+  return users.filter((u: TUser) =>
+    (u.name || "").toLowerCase().includes(q) ||
+    (u.email || "").toLowerCase().includes(q) ||
+    (u.role || "").toLowerCase().includes(q) ||
+    (u.status || "").toLowerCase().includes(q)
+  );
+}, [users, filter]);
 
   const downloadRecords = () => {
     if (!users?.length) return;
@@ -412,9 +424,10 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-4">
-                      <button className="flex items center text-primary/90 hover:text-primary/80 justify-center p-1 rounded">
-                        <Eye className="h-5 w-5" />
-                      </button>
+
+
+                   
+
                       <button
                         onClick={() => setEditId(user._id)}
                         className="flex items center text-green-600 hover:text-green-700 p-1 rounded"
@@ -433,6 +446,7 @@ export default function UsersPage() {
               ))
             )}
           </TableBody>
+          
         </Table>
         {userData?.pagination?.totalPages > 1 && (
           <div className="mt-4">
