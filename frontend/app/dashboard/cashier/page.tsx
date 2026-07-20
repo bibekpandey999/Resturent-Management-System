@@ -106,16 +106,19 @@ const [discountPercent, setDiscountPercent] = useState<string>("0");
       0,
     ) ?? 0;
 
-  const rawPercent = Math.min(100, Math.max(0, Number(discountPercent) || 0));
-const discountAmount = (ticketSubtotal * rawPercent) / 100;
+const rawPercent = discountPercent.trim() === "" 
+  ? 0 
+  : Math.min(100, Math.max(0, Number(discountPercent) || 0));
+
+const discountAmount = rawPercent === 0 ? 0 : (ticketSubtotal * rawPercent) / 100;
 const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
 
   const handleSaveDiscount = async () => {
   if (!selectedTicket?._id) return;
   setIsSavingDiscount(true);
   try {
-    await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
-  discount: discountAmount,
+  await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
+  discount: rawPercent === 0 ? 0 : discountAmount,
   discountPercent: rawPercent,
 });
 await refetch();
