@@ -110,28 +110,34 @@ const rawPercent = discountPercent.trim() === ""
   ? 0 
   : Math.min(100, Math.max(0, Number(discountPercent) || 0));
 
-const discountAmount = rawPercent === 0 ? 0 : (ticketSubtotal * rawPercent) / 100;
+const discountAmount = rawPercent === 0 ? 0 : (ticketSubtotal * rawPercent) / 100; 
 const ticketTotal = Math.max(0, ticketSubtotal - discountAmount);
 
-  const handleSaveDiscount = async () => {
+ const handleSaveDiscount = async () => {
   if (!selectedTicket?._id) return;
   setIsSavingDiscount(true);
   try {
-  await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
-  discount: rawPercent === 0 ? 0 : discountAmount,
-  discountPercent: rawPercent,
-});
-await refetch();
-    setSelectedTicket((prev: any) =>
-      prev ? { ...prev, discount: discountAmount, discountPercent: rawPercent } : prev,
-    );
+    await ticketApi.updateTicketDiscountApi(selectedTicket._id, {
+      discount: rawPercent === 0 ? 0 : discountAmount,
+      discountPercent: rawPercent,
+    });
+    const refreshed = await refetch();
+    const updatedList = refreshed?.data?.data ?? [];
+    const updatedTicket =
+      updatedList.find((t: TTicket) => t._id === selectedTicket._id) ?? {
+        ...selectedTicket,
+        discount: discountAmount,
+        discountPercent: rawPercent,
+      };
+
+    setSelectedTicket(updatedTicket);
+    setPrintedTicket(updatedTicket); // keep print copy in sync
   } catch (error) {
     console.error("Failed to save discount:", error);
   } finally {
     setIsSavingDiscount(false);
   }
 };
-
   return (
     <div className="space-y-6 print:bg-white">
       <DashboardHeader
@@ -248,11 +254,12 @@ await refetch();
                 tickets={filteredTickets}
                 onView={openTicketDialog}
                 onPrint={(ticket) => {
-                  setPrintedTicket(ticket);
-                  setTimeout(() => {
-                    handlePrintInvoice();
-                  }, 100);
-                }}
+  const latest = tickets.find((t: TTicket) => t._id === ticket._id) ?? ticket;
+  setPrintedTicket(latest);
+  setTimeout(() => {
+    handlePrintInvoice();
+  }, 100);
+}}
               />
             </CardContent>
           </Card>
